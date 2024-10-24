@@ -58,6 +58,11 @@
         "vulkan_platform.h": "c",
         "renderer_frontend.h": "c",
         "stdlib.h": "c",
-        "windows.h": "c"
+        "windows.h": "c",
+        "platform.h": "c",
+        "xiosbase": "c",
+        "system_error": "c",
+        "xlocale": "c",
+        "tmemory.h": "c"
     }
 }
