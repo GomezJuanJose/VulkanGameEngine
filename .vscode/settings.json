@@ -63,6 +63,7 @@
         "xiosbase": "c",
         "system_error": "c",
         "xlocale": "c",
-        "tmemory.h": "c"
+        "tmemory.h": "c",
+        "array": "cpp"
     }
 }

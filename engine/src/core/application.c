@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "platform/platform.h"
 #include "core/tmemory.h"
+#include "core/event.h"
 
 typedef struct application_state {
     game* game_inst;
@@ -27,6 +28,11 @@ b8 application_create(game* game_inst){
 
     // Initialize subsystems.
     initialize_logging();
+
+    if(!event_initialize()){
+        TFATAL("Event system failed initialization. Application cannot continue.");
+        return FALSE;
+    }
 
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
@@ -75,6 +81,7 @@ b8 application_run(){
 
     app_state.is_running = FALSE;
 
+    event_shutdown();
     platform_shutdow(&app_state.platform);
 
     return TRUE;
