@@ -26,9 +26,9 @@ u64 _darray_field_get(void* array, u64 field){
     return header[field];
 }
 
-u64 _darray_field_set(void* array, u64 field, u64 value){
+void _darray_field_set(void* array, u64 field, u64 value){
     u64* header = (u64*)array - DARRAY_FIELD_LENGTH;
-    return header[field];
+    header[field] = value;
 }
 
 void* _darray_resize(void* array){
