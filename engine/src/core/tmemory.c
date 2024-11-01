@@ -1,7 +1,9 @@
 #include "tmemory.h"
 
 #include "core/logger.h"
+#include "core/tstring.h"
 #include "platform/platform.h"
+
 
 // TODO: custom string lib
 #include <string.h>
@@ -110,6 +112,6 @@ char* get_memory_usage_str(){
         offset += length;
     }
 
-    char* out_string = _strdup(buffer);
+    char* out_string = string_duplicate(buffer);
     return out_string;
 }
