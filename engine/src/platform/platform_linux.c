@@ -7,6 +7,8 @@
 #include "core/event.h"
 #include "core/input.h"
 
+#include "containers/darray.h"
+
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h> // sudo apt-get install libx11-dev
@@ -175,6 +177,9 @@ TAPI void platform_shutdow(platform_state* plat_state){
     xcb_destroy_window(state->connection, state->window);
 }
 
+void platform_get_required_extension_names(const char*** names_darray){
+    darray_push(*names_darray, &"VK_KHR_xcb_surface"); // or VK_KHR_xlib_surface
+}
 
 TAPI b8 platform_pump_messages(platform_state* plat_state){
     // Simply cold-cast to the known type.
