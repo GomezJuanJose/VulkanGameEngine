@@ -2,6 +2,7 @@
 
 #include "vulkan_types.inl"
 #include "vulkan_platform.h"
+#include "vulkan_device.h"
 
 #include "core/logger.h"
 #include "core/tstring.h"
@@ -118,6 +119,20 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
         TDEBUG("Vulkan debugger created.");
 
     #endif
+
+    // Surface
+    TDEBUG("Creating Vulkan surface...");
+    if(!platform_create_vulkan_surface(plat_state, &context)){
+        TERROR("Failed to create platform surface!");
+        return FALSE;
+    }
+    TDEBUG("Vulkan surface created");
+
+    // Device creation
+    if(!vulkan_device_create(&context)){
+        TERROR("Failed to create device!");
+        return FALSE;
+    }
 
     TINFO("Vulkan renderer initialized successfully.");
 
