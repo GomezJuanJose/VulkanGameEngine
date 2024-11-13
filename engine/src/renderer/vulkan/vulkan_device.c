@@ -466,6 +466,7 @@ b8 physical_device_meets_requirements(
 
             if(avaliable_extension_count != 0){
                 avaliable_extensions = tallocate(sizeof(VkExtensionProperties) * avaliable_extension_count, MEMORY_TAG_RENDERER);
+                
                 VK_CHECK(vkEnumerateDeviceExtensionProperties(
                     device,
                     0,
@@ -489,9 +490,9 @@ b8 physical_device_meets_requirements(
                         return FALSE;
                     }
                 }
-            }
 
-            tfree(avaliable_extensions, sizeof(VkExtensionProperties) * avaliable_extension_count, MEMORY_TAG_RENDERER);
+                tfree(avaliable_extensions, sizeof(VkExtensionProperties) * avaliable_extension_count, MEMORY_TAG_RENDERER);
+            }
         }
 
         // Sampler anisotropy
