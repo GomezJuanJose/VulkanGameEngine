@@ -62,7 +62,7 @@ b8 vulkan_device_create(vulkan_context* context){
     }
 
     VkDeviceQueueCreateInfo queue_create_infos[index_count];
-    for(u32 i = 0; i < index_count; i++){
+    for(u32 i = 0; i < index_count; ++i){
         queue_create_infos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queue_create_infos[i].queueFamilyIndex = indices[i];
         queue_create_infos[i].queueCount = 1;
@@ -234,6 +234,33 @@ void vulkan_device_query_swapchain_support(
         ));
     }
 }
+
+b8 vulkan_device_detect_depth_format(vulkan_device* device){
+    // Format candidates
+    const u64 candidate_count = 3;
+    VkFormat candidates[3] = {
+        VK_FORMAT_D32_SFLOAT,
+        VK_FORMAT_D32_SFLOAT_S8_UINT,
+        VK_FORMAT_D24_UNORM_S8_UINT
+    };
+
+    u32 flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    for(u64 i = 0; i < candidate_count; ++i){
+        VkFormatProperties properties;
+        vkGetPhysicalDeviceFormatProperties(device->physical_device, candidates[i], &properties);
+
+        if((properties.linearTilingFeatures & flags) == flags){
+            device->depth_format = candidates[i];
+            return TRUE;
+        }else if((properties.optimalTilingFeatures & flags) == flags){
+            device->depth_format = candidates[i];
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 
 b8 select_physical_device(vulkan_context* context){
     u32 physical_device_count = 0;
@@ -413,7 +440,7 @@ b8 physical_device_meets_requirements(
     }
     
     // Print out some info about the device
-    TINFO("        %d |        %d |        %d |        %d | %s",
+    TINFO("       %d |       %d |       %d |        %d | %s",
             out_queue_info->graphics_family_index != -1,
             out_queue_info->present_family_index != -1,
             out_queue_info->compute_family_index != -1,
