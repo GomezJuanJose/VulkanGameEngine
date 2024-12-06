@@ -64,6 +64,7 @@
         "system_error": "c",
         "xlocale": "c",
         "tmemory.h": "c",
-        "array": "cpp"
+        "array": "cpp",
+        "event.h": "c"
     }
 }
