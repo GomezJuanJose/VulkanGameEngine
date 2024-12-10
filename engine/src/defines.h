@@ -97,3 +97,12 @@ STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 #endif
 
 #define TCLAMP(value, min, max) (value <= min) ? min : (value >= max) ? max : value;
+
+// Inlining
+#ifdef _MSC_VER
+    #define TINLINE __forceinline
+    #define TNOINLINE __declspec(noinline)
+#else
+    #define TINLINE static inline
+    #define TNOINLINE
+#endif
