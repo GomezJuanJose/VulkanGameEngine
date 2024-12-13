@@ -252,6 +252,42 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
             b8 pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
             keys key = (u16)w_param;
 
+
+            /**
+             * TODO:
+             * 
+                @zackshrout6726
+                hace 2 años
+                Hey I am sure you caught this and later commits will reflect it, but the reason the shift/ctrl/alt keys are only registering as pressed 
+                once is because GetKeyState() return false if the key is not pressed, so input_process_key() is never called with any of our KEY_RALT, 
+                etc, enums with pressed == false... meaning that if (state.keyboard_current.keys[key] != pressed) always evaluated to false after the 
+                first stroke.
+               
+                @TravisVroman
+                hace 2 años
+                Yep, it definitely wasn't right. I did wind up refactoring this somewhat down the road. 
+             */
+            // Special keys
+            if(w_param == VK_MENU){
+                if(GetKeyState(VK_RMENU) & 0x8000){
+                    key = KEY_RALT;
+                }else if(GetKeyState(VK_LMENU) & 0x8000){
+                    key = KEY_LALT;
+                }
+            }else if(w_param == VK_SHIFT){
+                if(GetKeyState(VK_RSHIFT) & 0x8000){
+                    key = KEY_RSHIFT;
+                }else if(GetKeyState(VK_LSHIFT) & 0x8000){
+                    key = KEY_LSHIFT;
+                }
+            } else if(w_param == VK_CONTROL){
+                if(GetKeyState(VK_RCONTROL) & 0x8000){
+                    key = KEY_RCONTROL;
+                }else if(GetKeyState(VK_LCONTROL) & 0x8000){
+                    key = KEY_LCONTROL;
+                }
+            }
+
             // Pass to the input subsystemfor processing.
             input_process_key(key, pressed); 
         }break;
