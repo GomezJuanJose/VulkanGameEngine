@@ -6,11 +6,11 @@
 #include "core/tmemory.h"
 
 #define T_PI 3.14159265358979323846f
-#define T_PI_2 2.0f * T_PI
-#define T_HALF_PI 0.5f * T_PI
-#define T_QUARTER_PI 0.25f * T_PI
-#define T_ONE_OVER_PI 1.0f / T_PI
-#define T_ONE_OVER_TWO_PI 1.0f / T_PI_2
+#define T_PI_2 (2.0f * T_PI)
+#define T_HALF_PI (0.5f * T_PI)
+#define T_QUARTER_PI (0.25f * T_PI)
+#define T_ONE_OVER_PI (1.0f / T_PI)
+#define T_ONE_OVER_TWO_PI (1.0f / T_PI_2)
 #define T_SQRT_TWO 1.41421356237309504880f
 #define T_SQRT_THREE 1.73205080756887729352f
 #define T_SQRT_ONE_OVER_TWO 0.70710678118654752440f
