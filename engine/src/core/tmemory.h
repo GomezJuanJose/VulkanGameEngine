@@ -39,3 +39,5 @@ TAPI void* tcopy_memory(void* dest, const void* source, u64 size);
 TAPI void* tset_memory(void* dest, i32 value, u64 size);
 
 TAPI char* get_memory_usage_str();
+
+TAPI u64 get_memory_alloc_count();
