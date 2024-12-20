@@ -21,9 +21,9 @@ TAPI void linear_allocator_destroy(linear_allocator* allocator){
         allocator->allocated = 0;
         if(allocator->owns_memory && allocator->memory){
             tfree(allocator->memory, allocator->total_size, MEMORY_TAG_LINEAR_ALLOCATOR);
-        }else{
-            allocator->memory = 0;
         }
+        
+        allocator->memory = 0;
         allocator->total_size = 0;
         allocator->owns_memory = FALSE;
     }
