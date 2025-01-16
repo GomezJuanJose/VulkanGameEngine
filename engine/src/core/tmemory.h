@@ -25,8 +25,8 @@ typedef enum memory_tag{
     MEMORY_TAG_MAX_TAGS
 } memory_tag;
 
-TAPI void initialize_memory();
-TAPI void shutdown_memory();
+TAPI void memory_system_initialize();
+TAPI void memory_system_shutdown();
 
 TAPI void* tallocate(u64 size, memory_tag tag);
 
