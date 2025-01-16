@@ -428,9 +428,9 @@ keys translate_keycode(u32 x_keycode){
         case XK_Help:
             return KEY_HELP;
 
-        case XK_Meta_L:
+        case XK_Super_L:
             return KEY_LWIN;  // TODO: not sure this is right
-        case XK_Meta_R:
+        case XK_Super_R:
             return KEY_RWIN;
             // case XK_apps: return KEY_APPS; // not supported
 
