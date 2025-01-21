@@ -52,30 +52,30 @@ void input_update(f64 delta_time){
 
 void input_process_key(keys key, b8 pressed){
 
-    if(key == KEY_LALT){
-        TINFO("Left alt pressed.");
-    }else if(key == KEY_RALT){
-        TINFO("Right alt pressed.");
-    }
     
-    if(key == KEY_LCONTROL){
-        TINFO("Left ctrl pressed.");
-    }else if(key == KEY_RCONTROL){
-        TINFO("Right ctrl pressed.");
-    }
-    
-    if(key == KEY_LSHIFT){
-        TINFO("Left shift pressed.");
-    }else if(key == KEY_RSHIFT){
-        TINFO("Right shift pressed.");
-    }
-
     // Only handle this if the state actually changed.
-    if(state_ptr->keyboard_current.keys[key] != pressed){
+    if(state_ptr && state_ptr->keyboard_current.keys[key] != pressed){
         // Update internal state_ptr->
         state_ptr->keyboard_current.keys[key] = pressed;
 
-       
+       if(key == KEY_LALT){
+            TINFO("Left alt %s.", pressed ? "pressed" : "released");
+        }else if(key == KEY_RALT){
+            TINFO("Right alt %s.", pressed ? "pressed" : "released");
+        }
+        
+        if(key == KEY_LCONTROL){
+            TINFO("Left ctrl %s.", pressed ? "pressed" : "released");
+        }else if(key == KEY_RCONTROL){
+            TINFO("Right ctrl %s.", pressed ? "pressed" : "released");
+        }
+        
+        if(key == KEY_LSHIFT){
+            TINFO("Left shift %s.", pressed ? "pressed" : "released");
+        }else if(key == KEY_RSHIFT){
+            TINFO("Right shift %s.", pressed ? "pressed" : "released");
+        }
+
 
         // Fire off an event for inmediate processing.
         event_context context;
