@@ -156,8 +156,8 @@ void vulkan_object_shader_destroy(vulkan_context* context, struct vulkan_object_
     // Destroy global descriptor pool.
     vkDestroyDescriptorPool(logical_device, shader->global_descriptor_pool, context->allocator);
 
-    // Destroy pipeline.
-    vulkan_pipeline_destroy(context, &shader->pipeline);
+    // Destroy descriptor set layout.
+    vkDestroyDescriptorSetLayout(logical_device, shader->global_descriptor_set_layout, context->allocator);
 
     // Destroy shader modules.
     for(u32 i = 0; i < OBJECT_SHADER_STAGE_COUNT; ++i){
@@ -175,6 +175,10 @@ void vulkan_object_shader_update_global_state(vulkan_context* context, struct vu
     u32 image_index = context->image_index;
     VkCommandBuffer command_buffer = context->graphics_command_buffers[image_index].handle;
     VkDescriptorSet global_descriptor = shader->global_descriptor_sets[image_index];
+
+
+    // Bind the global descriptor set to be updated.
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->pipeline.pipeline_layout, 0, 1, &global_descriptor, 0, 0);
 
     if(!shader->descriptor_updated[image_index]){
         // Configure the descriptors for the given index.
@@ -201,9 +205,6 @@ void vulkan_object_shader_update_global_state(vulkan_context* context, struct vu
         vkUpdateDescriptorSets(context->device.logical_device, 1, &descriptor_write, 0, 0);
         shader->descriptor_updated[image_index] = TRUE;
     }
-
-    // Bind the global descriptor set to be updated.
-    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->pipeline.pipeline_layout, 0, 1, &global_descriptor, 0, 0);
 
 }
 
