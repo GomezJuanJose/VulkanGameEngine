@@ -121,6 +121,7 @@ b8 vulkan_buffer_resize(
     // Destroy the old
     if(buffer->memory){
         vkFreeMemory(context->device.logical_device, buffer->memory, context->allocator);
+        buffer->memory = 0;
     }
     if(buffer->handle){
         vkDestroyBuffer(context->device.logical_device, buffer->handle, context->allocator);
