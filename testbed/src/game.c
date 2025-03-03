@@ -3,7 +3,10 @@
 #include <core/logger.h>
 #include <core/input.h>
 #include <core/tmemory.h>
+#include <core/event.h>
+
 #include <math/tmath.h>
+
 
 // HACK: this should not be available outside the engine.
 #include <renderer/renderer_frontend.h>
@@ -59,6 +62,14 @@ b8 game_update(game* game_inst, f32 delta_time){
         TDEBUG("Allocations: %llu (%llu this frame)", alloc_count, alloc_count - prev_alloc_count);
     }
     
+    // TODO: temporary
+    if(input_is_key_up('T') && input_was_key_down('T')){
+        TDEBUG("Swapping texture!");
+        event_context context = {};
+        event_fire(EVENT_CODE_DEBUG0, game_inst, context);
+    }
+    // TODO: end temporary
+
     game_state* state = (game_state*)game_inst->state;
 
     // HACK: this should not be available outside the engine.
