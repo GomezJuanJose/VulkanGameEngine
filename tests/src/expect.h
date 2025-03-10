@@ -35,7 +35,7 @@
  */
 #define expect_to_be_true(actual)                                                                           \
     if(actual != TRUE){                                                                                     \
-        TERROR("--> Expected TRUE, but got: FALSE. File: %s:%d.", expected, actual, __FILE__, __LINE__);    \
+        TERROR("--> Expected TRUE, but got: FALSE. File: %s:%d.", __FILE__, __LINE__);    \
         return FALSE;                                                                                       \
     }
 
@@ -44,6 +44,6 @@
  */
 #define expect_to_be_false(actual)                                                                          \
     if(actual != FALSE){                                                                                    \
-        TERROR("--> Expected FALSE, but got: TRUE. File: %s:%d.", expected, actual, __FILE__, __LINE__);    \
+        TERROR("--> Expected FALSE, but got: TRUE. File: %s:%d.", __FILE__, __LINE__);    \
         return FALSE;                                                                                       \
     }
