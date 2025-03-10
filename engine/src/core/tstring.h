@@ -10,6 +10,9 @@ TAPI char* string_duplicate(const char* str);
 // Case-sensitive string comparison. True if the same, otherwise false.
 TAPI b8 strings_equals(const char* str0, const char* str1);
 
+// Case-insensitive string comparasion. True if the same, otherwise false.
+TAPI b8 string_equalsi(const char* str0, const char* str1);
+
 // Performs string formatting to dest given format string and parameters.
 TAPI i32 string_format(char* dest, const char* format, ...);
 
