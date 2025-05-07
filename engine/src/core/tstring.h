@@ -1,6 +1,7 @@
 #pragma once
 
 #include "defines.h"
+#include "math/math_types.h"
 
 // Returns the length of the given string.
 TAPI u64 string_length(const char* str);
@@ -24,3 +25,148 @@ TAPI i32 string_format(char* dest, const char* format, ...);
  * @returns The size of the data written.
  */
 TAPI i32 string_format_v(char* dest, const char* format, void* va_list);
+
+TAPI char* string_copy(char* dest, const char* source);
+
+TAPI char* string_ncopy(char* dest, const char* source, i64 length);
+
+TAPI char* string_trim(char* str);
+
+TAPI void string_mid(char* dest, const char* source, i32 start, i32 length);
+
+/**
+ * @brief Returns the index of the first occurance of C in str; otherwise -1.
+ * 
+ * @param str The string to be scanned.
+ * @param c The character to search for.
+ * @return The index of the first occurance of C; otherwise -1 if not found.
+ */
+TAPI i32 string_index_of(char* str, char c);
+
+/**
+ * @brief Attempts to parse a vector from the provided string.
+ * 
+ * @param str The string to parse from. Should be space-delimited. (i.e. "1.0 2.0 3.0 4.0")
+ * @param out_vector A pointer to the vector to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_vec4(char* str, vec4* out_vector);
+
+/**
+ * @brief Attempts to parse a vector from the provided string.
+ * 
+ * @param str The string to parse from. Should be space-delimited. (i.e. "1.0 2.0 3.0")
+ * @param out_vector A pointer to the vector to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_vec3(char* str, vec3* out_vector);
+
+/**
+ * @brief Attempts to parse a vector from the provided string.
+ * 
+ * @param str The string to parse from. Should be space-delimited. (i.e. "1.0 2.0")
+ * @param out_vector A pointer to the vector to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_vec2(char* str, vec2* out_vector);
+
+
+/**
+ * @brief Attempts to parse a 32-bit floating-point number from the provided string.
+ * 
+ * @param str The string to parse from. Should *not* be postfixed with 'f'.
+ * @param f A pointer to the float to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_f32(char* str, f32* f);
+
+/**
+ * @brief Attempts to parse a 64-bit floating-point number from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param f A pointer to the float to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_f64(char* str, f64* f);
+
+/**
+ * @brief Attempts to parse a 8-bit signed interger from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param i A pointer to the int to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_i8(char* str, i8* i);
+
+/**
+ * @brief Attempts to parse a 16-bit signed interger from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param i A pointer to the int to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_i16(char* str, i16* i);
+
+/**
+ * @brief Attempts to parse a 32-bit signed interger from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param i A pointer to the int to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_i32(char* str, i32* i);
+
+/**
+ * @brief Attempts to parse a 64-bit signed interger from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param i A pointer to the int to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_i64(char* str, i64* i);
+
+/**
+ * @brief Attempts to parse a 8-bit unsigned interger from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param u A pointer to the int to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_u8(char* str, u8* u);
+
+/**
+ * @brief Attempts to parse a 16-bit unsigned interger from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param u A pointer to the int to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_u16(char* str, u16* u);
+
+/**
+ * @brief Attempts to parse a 32-bit unsigned interger from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param u A pointer to the int to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_u32(char* str, u32* u);
+
+/**
+ * @brief Attempts to parse a 64-bit unsigned interger from the provided string.
+ * 
+ * @param str The string to parse from.
+ * @param u A pointer to the int to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_u64(char* str, u64* u);
+
+/**
+ * @brief Attempts to parse a boolean from the provided string.
+ * "true" or "1" are considered true; anything else is false.
+ * 
+ * @param str The string to parse from. "true" or "1" are considered true; anything else is false.
+ * @param b A pointer to the boolean to write to.
+ * @return True if parsed successfully; otherwise false.
+ */
+TAPI b8 string_to_bool(char* str, b8* b);
