@@ -65,6 +65,14 @@
         "xlocale": "c",
         "tmemory.h": "c",
         "array": "cpp",
-        "event.h": "c"
+        "event.h": "c",
+        "test_manager.h": "c",
+        "material_system.h": "c",
+        "xutility": "c",
+        "span": "c",
+        "vector": "c",
+        "xstring": "c",
+        "image_loader.h": "c",
+        "tstring.h": "c"
     }
 }

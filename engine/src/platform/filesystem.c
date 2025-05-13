@@ -55,6 +55,17 @@ void filesystem_close(file_handle* handle){
     }
 }
 
+b8 filesystem_size(file_handle* handle, u64*out_size){
+    if(handle->handle){
+        fseek((FILE*)handle->handle, 0, SEEK_END);
+        *out_size = ftell((FILE*)handle->handle);
+        rewind((FILE*)handle->handle);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 b8 filesystem_read_line(file_handle* handle, u64 max_length, char** line_buf, u64* out_line_length){
     if(handle->handle && line_buf && out_line_length && max_length > 0){
         char* buf = *line_buf;
@@ -93,19 +104,30 @@ b8 filesystem_read(file_handle* handle, u64 data_size, void* out_data, u64* out_
     return FALSE;
 }
 
-b8 filesystem_read_all_bytes(file_handle* handle, u8** out_bytes, u64* out_bytes_read){
-    if(handle->handle){
+b8 filesystem_read_all_bytes(file_handle* handle, u8* out_bytes, u64* out_bytes_read){
+    if(handle->handle && out_bytes && out_bytes_read){
         // File size
-        fseek((FILE*)handle->handle, 0, SEEK_END);
-        u64 size = ftell((FILE*)handle->handle);
-        rewind((FILE*)handle->handle);
-
-        *out_bytes = tallocate(sizeof(u8) * size, MEMORY_TAG_STRING);
-        *out_bytes_read = fread(*out_bytes, 1, size, (FILE*)handle->handle);
-        if(*out_bytes_read != size){
+        u64 size = 0;
+        if(!filesystem_size(handle, &size)){
             return FALSE;
         }
-        return TRUE;
+
+        *out_bytes_read = fread(out_bytes, 1, size, (FILE*)handle->handle);
+        return *out_bytes_read == size;
+    }
+    return FALSE;
+}
+
+b8 filesystem_read_all_text(file_handle* handle, char* out_text, u64* out_bytes_read){
+    if(handle->handle && out_text && out_bytes_read){
+        // File size
+        u64 size = 0;
+        if(!filesystem_size(handle, &size)){
+            return FALSE;
+        }
+
+        *out_bytes_read = fread(out_text, 1, size, (FILE*)handle->handle);
+        return *out_bytes_read == size;
     }
     return FALSE;
 }
