@@ -74,3 +74,8 @@ typedef struct vertex_3d {
     vec3 position;
     vec2 texcoord;
 } vertex_3d;
+
+typedef struct vertex_2d {
+    vec2 position;
+    vec2 texcoord;
+} vertex_2d;
