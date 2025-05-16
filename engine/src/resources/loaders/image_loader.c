@@ -6,8 +6,11 @@
 #include "resources/resource_types.h"
 #include "systems/resource_system.h"
 
+#include "loader_utils.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb_image.h"
+
 
 b8 image_loader_load(struct resource_loader* self, const char* name, resource* out_resource){
     if(!self || !name || !out_resource){
@@ -61,21 +64,8 @@ b8 image_loader_load(struct resource_loader* self, const char* name, resource* o
 }
 
 void image_loader_unload(struct resource_loader* self, resource* resource){
-    if(!self || !resource){
+    if(!resource_unload(self, resource, MEMORY_TAG_TEXTURE)){
         TWARN("image_loader_unload called with nullptr for self or resource.");
-        return;
-    }
-
-    u32 path_length = string_length(resource->full_path);
-    if(path_length){
-        tfree(resource->full_path, sizeof(char) * path_length + 1, MEMORY_TAG_STRING);
-    }
-
-    if(resource->data){
-        tfree(resource->data, resource->data_size, MEMORY_TAG_TEXTURE);
-        resource->data = 0;
-        resource->data_size = 0;
-        resource->loader_id = INVALID_ID;
     }
 }
 

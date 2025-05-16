@@ -9,6 +9,8 @@
 
 #include "platform/filesystem.h"
 
+#include "loader_utils.h"
+
 b8 material_loader_load(struct resource_loader* self, const char*name, resource* out_resource){
     if(!self || !name || !out_resource){
         return FALSE;
@@ -18,9 +20,6 @@ b8 material_loader_load(struct resource_loader* self, const char*name, resource*
     char full_file_path[512];
     string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, ".tmt");
 
-    // TODO: Should be using an allocator here.
-    out_resource->full_path = string_duplicate(full_file_path);
-
     file_handle f;
     if(!filesystem_open(full_file_path, FILE_MODE_READ, FALSE, &f)){
         TERROR("material_loader_load - unable to open material file for reading: '%s'.", full_file_path);
@@ -28,8 +27,12 @@ b8 material_loader_load(struct resource_loader* self, const char*name, resource*
     }
 
     // TODO: Should be using an allocator here.
+    out_resource->full_path = string_duplicate(full_file_path);
+
+    // TODO: Should be using an allocator here.
     material_config* resource_data = tallocate(sizeof(material_config), MEMORY_TAG_MATERIAL_INSTANCE);
     // Set some defaults.
+    resource_data->type = MATERIAL_TYPE_WORLD;
     resource_data->auto_release = TRUE;
     resource_data->diffuse_colour = vec4_one(); // White
     resource_data->diffuse_map_name[0] = 0;
@@ -86,6 +89,11 @@ b8 material_loader_load(struct resource_loader* self, const char*name, resource*
                 TWARN("Error parsing diffuse_colour in file '%s'. Using default of white instead.", full_file_path);
                 // NOTE: The default value was assigned above.
             }
+        } else if (string_equalsi(trimmed_var_name, "type")){
+            // TODO: other material types.
+            if(string_equalsi(trimmed_value,"ui")){
+                resource_data->type = MATERIAL_TYPE_UI;
+            }
         }
 
         // TODO: more fields.
@@ -105,21 +113,8 @@ b8 material_loader_load(struct resource_loader* self, const char*name, resource*
 }
 
 void material_loader_unload(struct resource_loader* self, resource* resource){
-    if(!self || !resource){
+    if(!resource_unload(self, resource, MEMORY_TAG_MATERIAL_INSTANCE)){
         TWARN("material_loader_unload called with nullptr for self or resource.");
-        return;
-    }
-
-    u32 path_length = string_length(resource->full_path);
-    if(path_length){
-        tfree(resource->full_path, sizeof(char) * path_length + 1, MEMORY_TAG_STRING);
-    }
-
-    if(resource->data){
-        tfree(resource->data, resource->data_size, MEMORY_TAG_MATERIAL_INSTANCE);
-        resource->data = 0;
-        resource->data_size = 0;
-        resource->loader_id = INVALID_ID;
     }
 }
 

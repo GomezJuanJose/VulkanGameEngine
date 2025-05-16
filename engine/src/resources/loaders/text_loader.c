@@ -9,6 +9,8 @@
 
 #include "platform/filesystem.h"
 
+#include "loader_utils.h"
+
 b8 text_loader_load(struct resource_loader* self, const char* name, resource* out_resource){
     if(!self || !name || !out_resource){
         return FALSE;
@@ -18,14 +20,14 @@ b8 text_loader_load(struct resource_loader* self, const char* name, resource* ou
     char full_file_path[512];
     string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, "");
 
-    // TODO: Should be using an allocator here.
-    out_resource->full_path = string_duplicate(full_file_path);
-
     file_handle f;
     if(!filesystem_open(full_file_path, FILE_MODE_READ, FALSE, &f)){
         TERROR("text_loader_load - unable to open file for text reading: '%s'.", full_file_path);
         return FALSE;
     }
+
+    // TODO: Should be using an allocator here.
+    out_resource->full_path = string_duplicate(full_file_path);
 
     u64 file_size = 0;
     if(filesystem_size(&f, &file_size)){
@@ -53,21 +55,8 @@ b8 text_loader_load(struct resource_loader* self, const char* name, resource* ou
 }
 
 void text_loader_unload(struct resource_loader* self, resource* resource){
-    if(!self || !resource){
-        TWARN("text_loader_unload called with nullptr for self or resource.");
-        return;
-    }
-
-    u32 path_length = string_length(resource->full_path);
-    if(path_length){
-        tfree(resource->full_path, sizeof(char) * path_length + 1, MEMORY_TAG_STRING);
-    }
-
-    if(resource->data){
-        tfree(resource->data, resource->data_size, MEMORY_TAG_TEXTURE);
-        resource->data = 0;
-        resource->data_size = 0;
-        resource->loader_id = INVALID_ID;
+    if(!resource_unload(self, resource, MEMORY_TAG_TEXTURE)){
+        TWARN("material_loader_unload called with nullptr for self or resource.");
     }
 }
 
