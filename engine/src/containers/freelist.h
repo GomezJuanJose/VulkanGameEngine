@@ -3,7 +3,7 @@
  * @author Juan José (gs.juanjose.1999@gmail.com)
  * @brief This file contains a free list, used for custom memory allocation tracking.
  * @version 0.1
- * @date 2022-01-12
+ * @date 2025-05-19
  * 
  * @copyright Copyright (c) 2025
  */

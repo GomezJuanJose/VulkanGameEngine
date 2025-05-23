@@ -4,6 +4,8 @@
 #include "core/tstring.h"
 #include "platform/platform.h"
 
+#include "memory/dynamic_allocator.h"
+
 
 // TODO: custom string lib
 #include <string.h>
@@ -35,24 +37,62 @@ static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] = {
 
 };
 
-typedef struct memory_struct_state {
+typedef struct memory_system_state {
+    memory_system_configuration config;
     struct memory_stats stats;
     u64 alloc_count;
+    u64 allocator_memory_requirement;
+    dynamic_allocator allocator;
+    void* allocator_block;
 } memory_system_state;
 
 static memory_system_state* state_ptr;
 
-void memory_system_initialize(u64* memory_requirement, void* state){
-    *memory_requirement = sizeof(memory_system_state);
-    if(state == 0){
-        return;
+b8 memory_system_initialize(memory_system_configuration config){
+    // The amount needed by the system state.
+    u64 state_memory_requirement = sizeof(memory_system_state);
+
+    // Figure out how much space th dynamic allocator needs.
+    u64 alloc_requirement = 0;
+    dynamic_allocator_create(config.total_alloc_size, &alloc_requirement, 0, 0);
+
+    // Call the platform allocator to get the memory for the whole system, including the state.
+    // TODO: memory alignment
+    void* block = platform_allocate(state_memory_requirement + alloc_requirement, FALSE);
+    if(!block){
+        TFATAL("Memory system allocation failed and the system cannot continue.");
     }
-    state_ptr = state;
+
+    // The state is in the first part of the massive block of memory.
+    state_ptr = (memory_system_state*)block;
+    state_ptr->config = config;
     state_ptr->alloc_count = 0;
+    state_ptr->allocator_memory_requirement = alloc_requirement;
+
     platform_zero_memory(&state_ptr->stats, sizeof(state_ptr->stats));
+    // The allocator block is in the same block of memory, but after the state.
+    state_ptr->allocator_block = ((void*)block + state_memory_requirement);
+
+    if(!dynamic_allocator_create(
+        config.total_alloc_size,
+        &state_ptr->allocator_memory_requirement,
+        state_ptr->allocator_block,
+        &state_ptr->allocator
+    )){
+        TFATAL("Memory system is unable to setup internal allocator. Application cannot continue.");
+        return FALSE;
+    }
+
+    TDEBUG("Memory system successfully allocated %llu bytes.", config.total_alloc_size);
+    return TRUE;
 }
 
-void memory_system_shutdown(void* state){
+void memory_system_shutdown(){
+    if(state_ptr){
+        dynamic_allocator_destroy(&state_ptr->allocator);
+        // Free the entire block
+        platform_free(state_ptr, state_ptr->allocator_memory_requirement + sizeof(memory_system_state));
+    }
     state_ptr = 0;
 }
 
@@ -61,16 +101,29 @@ void* tallocate(u64 size, memory_tag tag){
         TWARN("tallocate called using MEMORY_TAG_UNKNOWN. Re-class this allocation.");
     }
 
+    // Either allocate from the system's allocator or the OS. The latter shouldn't ever
+    // really happen.
+    void* block = 0;
     if(state_ptr){
         state_ptr->stats.total_allocated += size;
         state_ptr->stats.tagged_allocations[tag] += size;
         state_ptr->alloc_count++;
+
+        block = dynamic_allocator_allocate(&state_ptr->allocator, size);
+    } else {
+        // If the system is not up yet, warn about it but give memory form now.
+        TWARN("tallocate called before the memory system is initialized.");
+        // TODO: Memory alignment
+        block = platform_allocate(size, FALSE);
+    }
+
+    if(block){
+        platform_zero_memory(block, size);
+        return block;
     }
     
-    // TODO: memory aligment
-    void* block = platform_allocate(size, FALSE);
-    platform_zero_memory(block, size);
-    return block;
+    TFATAL("tallocate failed to allocate successfully.");
+    return 0;
 }
 
 void tfree(void* block, u64 size, memory_tag tag){
@@ -81,10 +134,21 @@ void tfree(void* block, u64 size, memory_tag tag){
     if(state_ptr){
         state_ptr->stats.total_allocated -= size;
         state_ptr->stats.tagged_allocations[tag] -= size;
+        b8 result = dynamic_allocator_free(&state_ptr->allocator, block, size);
+
+        // If the free failed, it's possible this is because the allocation was made
+        // before this system was started up. Since this absolutely should be an exception
+        // to the rule, try freeing it on the platform level. If this fails, some other
+        // brean of skulduggery is afoot, and we have bugger problems on our hands.
+        if(!result){
+            // TODO: Memory alignment
+            platform_free(block, FALSE);
+        }
+    } else {
+        // TODO: Memory alignment
+        platform_free(block, FALSE);
     }
 
-    // TODO: memory aligment
-    platform_free(block, FALSE);
 }
 
 void* tzero_memory(void* block, u64 size){
