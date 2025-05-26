@@ -444,9 +444,17 @@ b8 physical_device_meets_requirements(
         u8 current_transform_score = 0;
 
         // Graphics queue?
-        if(queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT){
+        if(out_queue_info->graphics_family_index == -1 && queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT){
             out_queue_info->graphics_family_index = i;
             ++current_transform_score;
+
+            // If also a present queue, this prioritizes grouping of the 2.
+            VkBool32 supports_present = VK_FALSE;
+            VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &supports_present));
+            if(supports_present){
+                out_queue_info->present_family_index = i;
+                ++current_transform_score;
+            }
         }
 
         // Compute queue?
@@ -464,15 +472,28 @@ b8 physical_device_meets_requirements(
                 out_queue_info->transfer_family_index = i;
             }
         }
-
-        // Present queue?
-        VkBool32 supports_present = VK_FALSE;
-        VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &supports_present));
-        if(supports_present){
-            out_queue_info->present_family_index = i;
-        }
     }
     
+    // If a present queue hasn't been found, iterate again and take the first one.
+    // This should only happen if there is a queue that supports graphics but NOT
+    // present.
+    if(out_queue_info->present_family_index == -1){
+        for(u32 i = 0; i < queue_family_count; ++i){
+            VkBool32 supports_present = VK_FALSE;
+            VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &supports_present));
+            if(supports_present){
+                out_queue_info->present_family_index = i;
+
+                // If they differ, bleat about it and move on. This is just here for troubleshooting
+                // purpouses.
+                if(out_queue_info->present_family_index != out_queue_info->graphics_family_index){
+                    TWARN("Warning: Different queue index used for present vs graphics: %u.", i);
+                }
+                break;
+            }
+        }
+    }
+
     // Print out some info about the device
     TINFO("       %d |       %d |       %d |        %d | %s",
             out_queue_info->graphics_family_index != -1,
