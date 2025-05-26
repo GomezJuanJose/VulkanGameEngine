@@ -458,14 +458,19 @@ b8 vulkan_renderer_backend_begin_frame(renderer_backend* backend, f32 delta_time
     vkCmdSetViewport(command_buffer->handle, 0, 1, &viewport);
     vkCmdSetScissor(command_buffer->handle, 0, 1, &scissor);
 
+    // Update the main/world renderpass dimensions.
     context.main_renderpass.render_area.z = context.framebuffer_width;
     context.main_renderpass.render_area.w = context.framebuffer_height;
+
+    // Also update the UI renderpass dimensions.
+    context.ui_renderpass.render_area.z = context.framebuffer_width;
+    context.ui_renderpass.render_area.w = context.framebuffer_height;
 
     return TRUE;
 }
 
 void vulkan_renderer_update_global_world_state(mat4 projection, mat4 view, vec3 view_position, vec4 ambient_colour, i32 model){
-    vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
+    // vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
 
     vulkan_material_shader_use(&context, &context.material_shader);
 
@@ -477,7 +482,7 @@ void vulkan_renderer_update_global_world_state(mat4 projection, mat4 view, vec3 
 }
 
 void vulkan_renderer_update_global_ui_state(mat4 projection, mat4 view, i32 model){
-    vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
+    // vulkan_command_buffer* command_buffer = &context.graphics_command_buffers[context.image_index];
 
     vulkan_ui_shader_use(&context, &context.ui_shader);
 
@@ -774,11 +779,13 @@ b8 recreate_swapchain(renderer_backend* backend){
         vkDestroyFramebuffer(context.device.logical_device, context.swapchain.framebuffers[i], context.allocator);
     }
 
+    // Update the main/world renderpass dimensions.
     context.main_renderpass.render_area.x = 0;
     context.main_renderpass.render_area.y = 0;
     context.main_renderpass.render_area.z = context.framebuffer_width;
     context.main_renderpass.render_area.w = context.framebuffer_height;
 
+    // Also update the UI renderpass dimensions.
     context.ui_renderpass.render_area.x = 0;
     context.ui_renderpass.render_area.y = 0;
     context.ui_renderpass.render_area.z = context.framebuffer_width;
