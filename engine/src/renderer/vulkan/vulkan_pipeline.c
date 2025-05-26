@@ -83,7 +83,7 @@ vulkan_context* context,
 
     // Dynamic state
     const u32 dynamic_state_count = 3;
-    VkDynamicState dynamic_states[dynamic_state_count] = {
+    VkDynamicState dynamic_states[3] = {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
         VK_DYNAMIC_STATE_LINE_WIDTH

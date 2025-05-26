@@ -115,7 +115,7 @@ b8 vulkan_buffer_resize(
 
     // Resize the freelist first.
     u64 new_memory_requirement = 0;
-    freelist_resize(&buffer->buffer_freelist, &new_memory_requirement, 0, 0, 0);
+    freelist_resize(&buffer->buffer_freelist, &new_memory_requirement, 0, 0, 0);// TODO: REVISIT, maybe is necessary to pass the new_size to calculate the true memory requirement, with 0 only returns the status size
     void* new_block = tallocate(new_memory_requirement, MEMORY_TAG_RENDERER);
     void* old_block = 0;
     if(!freelist_resize(&buffer->buffer_freelist, &new_memory_requirement, new_block, new_size, &old_block)){
