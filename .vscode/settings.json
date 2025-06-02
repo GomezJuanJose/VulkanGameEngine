@@ -75,6 +75,13 @@
         "image_loader.h": "c",
         "tstring.h": "c",
         "vulkan_material_shader.h": "c",
-        "freelist_tests.h": "c"
+        "freelist_tests.h": "c",
+        "xlocmon": "c",
+        "format": "c",
+        "initializer_list": "c",
+        "xtree": "c",
+        "logger.h": "c",
+        "application.h": "c",
+        "defines.h": "c"
     }
 }

@@ -32,7 +32,7 @@ b8 material_loader_load(struct resource_loader* self, const char*name, resource*
     // TODO: Should be using an allocator here.
     material_config* resource_data = tallocate(sizeof(material_config), MEMORY_TAG_MATERIAL_INSTANCE);
     // Set some defaults.
-    resource_data->type = MATERIAL_TYPE_WORLD;
+    resource_data->shader_name = "Builtin.Material"; // Default material.
     resource_data->auto_release = TRUE;
     resource_data->diffuse_colour = vec4_one(); // White
     resource_data->diffuse_map_name[0] = 0;
@@ -77,23 +77,21 @@ b8 material_loader_load(struct resource_loader* self, const char*name, resource*
         char* trimmed_value = string_trim(raw_value);
 
         // Process the varaible.
-        if(string_equalsi(trimmed_var_name, "version")){
+        if(strings_equali(trimmed_var_name, "version")){
             // TODO: version
-        } else if (string_equalsi(trimmed_var_name, "name")){
+        } else if (strings_equali(trimmed_var_name, "name")){
             string_ncopy(resource_data->name, trimmed_value, MATERIAL_NAME_MAX_LENGTH);
-        } else if (string_equalsi(trimmed_var_name, "diffuse_map_name")){
+        } else if (strings_equali(trimmed_var_name, "diffuse_map_name")){
             string_ncopy(resource_data->diffuse_map_name, trimmed_value, TEXTURE_NAME_MAX_LENGTH);
-        } else if (string_equalsi(trimmed_var_name, "diffuse_colour")){
+        } else if (strings_equali(trimmed_var_name, "diffuse_colour")){
             // Parse the colour
             if(!string_to_vec4(trimmed_value, &resource_data->diffuse_colour)){
                 TWARN("Error parsing diffuse_colour in file '%s'. Using default of white instead.", full_file_path);
                 // NOTE: The default value was assigned above.
             }
-        } else if (string_equalsi(trimmed_var_name, "type")){
-            // TODO: other material types.
-            if(string_equalsi(trimmed_value,"ui")){
-                resource_data->type = MATERIAL_TYPE_UI;
-            }
+        } else if (strings_equali(trimmed_var_name, "shader")){
+            // Take a copy of the material name.
+            resource_data->shader_name = string_duplicate(trimmed_value);
         }
 
         // TODO: more fields.

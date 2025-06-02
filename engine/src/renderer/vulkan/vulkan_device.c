@@ -560,7 +560,7 @@ b8 physical_device_meets_requirements(
                 for(u32 i = 0; i < required_extension_count; ++i){
                     b8 found = FALSE;
                     for(u32 j = 0; j < avaliable_extension_count; ++j){
-                        if(strings_equals(requirements->device_extension_names[i], avaliable_extensions[j].extensionName)){
+                        if(strings_equal(requirements->device_extension_names[i], avaliable_extensions[j].extensionName)){
                             found = TRUE;
                             break;
                         }

@@ -8,6 +8,7 @@
 #include "resources/loaders/binary_loader.h"
 #include "resources/loaders/image_loader.h"
 #include "resources/loaders/material_loader.h"
+#include "resources/loaders/shader_loader.h"
 
 typedef struct resource_system_state{
     resource_system_config config;
@@ -47,7 +48,7 @@ b8 resource_system_initialize(u64* memory_requirement, void* state, resource_sys
     resource_system_register_loader(binary_resource_loader_create());
     resource_system_register_loader(image_resource_loader_create());
     resource_system_register_loader(material_resource_loader_create());
-    
+    resource_system_register_loader(shader_resource_loader_create());
 
     TINFO("Resource system initialized with base path '%s'.", config.asset_base_path);
 
@@ -70,7 +71,7 @@ b8 resource_system_register_loader(resource_loader loader){
                 if(l->type == loader.type){
                     TERROR("resource_system_register_loader - Loader of type %d already exists and will not be registered.", loader.type);
                     return FALSE;
-                } else if(loader.custom_type && string_length(loader.custom_type) > 0 && string_equalsi(l->custom_type, loader.custom_type)){
+                } else if(loader.custom_type && string_length(loader.custom_type) > 0 && strings_equali(l->custom_type, loader.custom_type)){
                     TERROR("resource_system_register_loader - Loader of custom type %s already exists and will not be registered.", loader.custom_type);
                     return FALSE;
                 }
@@ -113,7 +114,7 @@ b8 resource_system_load_custom(const char* name, const char* custom_type, resour
         u32 count = state_ptr->config.max_loader_count;
         for(u32 i = 0; i < count; ++i){
             resource_loader* l = &state_ptr->registered_loaders[i];
-            if(l->id != INVALID_ID && l->type == RESOURCE_TYPE_CUSTOM && string_equalsi(l->custom_type, custom_type)){
+            if(l->id != INVALID_ID && l->type == RESOURCE_TYPE_CUSTOM && strings_equali(l->custom_type, custom_type)){
                 return load(name, l, out_resource);
             }
         }

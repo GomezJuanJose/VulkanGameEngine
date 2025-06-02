@@ -102,7 +102,7 @@ void texture_system_shutdown(void* state){
 
 texture* texture_system_acquire(const char* name, b8 auto_release){
     // Return default texture, but warn about it since this should be returned via get_default_texture();
-    if(string_equalsi(name, DEFAULT_TEXTURE_NAME)){
+    if(strings_equali(name, DEFAULT_TEXTURE_NAME)){
         TWARN("texture_system_acquire called for default texture. Use texture_system_get_default_texture for texture 'default'");
         return &state_ptr->default_texture;
     }
@@ -156,7 +156,7 @@ texture* texture_system_acquire(const char* name, b8 auto_release){
 
 void texture_system_release(const char* name){
     // Ignore release requests for the default texture.
-    if(string_equalsi(name, DEFAULT_TEXTURE_NAME)){
+    if(strings_equali(name, DEFAULT_TEXTURE_NAME)){
         return;
     }
     texture_reference ref;
