@@ -238,7 +238,7 @@ b8 application_create(game* game_inst){
     // TODO: temp
     
     // Load up a plane configuration, and load geometry from it.
-    geometry_config g_config = geometry_system_generate_plane_config(10.0f, 5.0f, 5, 5, 5.0f, 2.0f, "test geometry", "test_material");
+    geometry_config g_config = geometry_system_generate_cube_config(10.0f, 10.0f, 10.0f, 1.0f, 1.0f, "test_cube", "test_material");
     app_state->test_geometry = geometry_system_acquire_from_config(g_config, TRUE);
 
     // Clean up the allocations for the geometry config.
@@ -258,26 +258,27 @@ b8 application_create(game* game_inst){
     string_ncopy(ui_config.name, "test_ui_geometry", GEOMETRY_NAME_MAX_LENGTH);
 
     // Create default 2d geometry.
-    const f32 f = 512.0f;
+    const f32 w = 128.0f;
+    const f32 h = 32.0f;
     vertex_2d uiverts[4];
     // tzero_memory(uiverts, sizeof(vertex_3d) * 4); TODO: Investigate why if this is uncomment, ui_config.vertex_size and vertex_count is set to 0
-    uiverts[0].position.x = 0.0 * f;   // 0    3
-    uiverts[0].position.y = 0.0 * f;   //       
-    uiverts[0].texcoord.x = 0.0f;      //       
-    uiverts[0].texcoord.y = 0.0f;      // 2    1
+    uiverts[0].position.x = 0.0f;   // 0    3
+    uiverts[0].position.y = 0.0f;   //       
+    uiverts[0].texcoord.x = 0.0f;  //       
+    uiverts[0].texcoord.y = 0.0f;  // 2    1
 
 
-    uiverts[1].position.x = f;
-    uiverts[1].position.y = f;
+    uiverts[1].position.x = w;
+    uiverts[1].position.y = h;
     uiverts[1].texcoord.x = 1.0f;
     uiverts[1].texcoord.y = 1.0f;
 
     uiverts[2].position.x = 0.0f;
-    uiverts[2].position.y = f;
+    uiverts[2].position.y = h;
     uiverts[2].texcoord.x = 0.0f;
     uiverts[2].texcoord.y = 1.0f;
     
-    uiverts[3].position.x = f;
+    uiverts[3].position.x = w;
     uiverts[3].position.y = 0.0f;
     uiverts[3].texcoord.x = 1.0f;
     uiverts[3].texcoord.y = 0.0f;
@@ -352,7 +353,12 @@ b8 application_run(){
             // TODO: temp
             geometry_render_data test_render;
             test_render.geometry = app_state->test_geometry;
-            test_render.model = mat4_identity();
+            //test_render.model = mat4_identity();
+            static f32 angle = 0;
+            angle += (1.0f * delta);
+            quat rotation = quat_from_axis_angle((vec3){0, 1, 0}, angle, TRUE);
+            test_render.model = quat_to_mat4(rotation);
+
             packet.geometry_count = 1;
             packet.geometries = &test_render;
 

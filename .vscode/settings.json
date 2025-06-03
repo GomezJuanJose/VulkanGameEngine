@@ -82,6 +82,7 @@
         "xtree": "c",
         "logger.h": "c",
         "application.h": "c",
-        "defines.h": "c"
+        "defines.h": "c",
+        "game_types.h": "c"
     }
 }
