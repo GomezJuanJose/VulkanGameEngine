@@ -169,7 +169,7 @@ typedef struct vulkan_geometry_data{
 
 #define VULKAN_SHADER_MAX_UNIFORMS 128
 
-#define VULKAN_SHADER_MAX_BINDINGS 32
+#define VULKAN_SHADER_MAX_BINDINGS 2
 #define VULKAN_SHADER_MAX_PUSH_CONST_RANGES 32
 
 
