@@ -44,7 +44,8 @@ typedef struct texture {
 typedef enum texture_use {
     TEXTURE_USE_UNKNOWN = 0x00,
     TEXTURE_USE_MAP_DIFFUSE = 0x01,
-    TEXTURE_USE_MAP_SPECULAR = 0x02
+    TEXTURE_USE_MAP_SPECULAR = 0x02,
+    TEXTURE_USE_MAP_NORMAL = 0x03
 } texture_use;
 
 typedef struct texture_map{
@@ -62,6 +63,7 @@ typedef struct material_config{
     f32 shininess;
     char diffuse_map_name[TEXTURE_NAME_MAX_LENGTH];
     char specular_map_name[TEXTURE_NAME_MAX_LENGTH];
+    char normal_map_name[TEXTURE_NAME_MAX_LENGTH];
 } material_config;
 
 typedef struct material{
@@ -72,6 +74,7 @@ typedef struct material{
     vec4 diffuse_colour;
     texture_map diffuse_map;
     texture_map specular_map;
+    texture_map normal_map;
 
     /** @brief The material shininess, determines how concentrated the specular light is. */
     f32 shininess;
