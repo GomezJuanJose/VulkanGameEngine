@@ -107,6 +107,12 @@ typedef enum system_event_code {
      */
     EVENT_CODE_RESIZED = 0x08,
 
+    // Change the render mode for debugging purposes.
+    /** Context usage:
+     * i32 mode = context.data.i32[0];
+     */
+    EVENT_CODE_SET_RENDER_MODE = 0x0A,
+
     EVENT_CODE_DEBUG0 = 0x10,
     EVENT_CODE_DEBUG1 = 0x11,
     EVENT_CODE_DEBUG2 = 0x12,

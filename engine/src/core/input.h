@@ -18,7 +18,7 @@ typedef enum keys{
     DEFINE_KEY(SHIFT, 0x10),
     DEFINE_KEY(CONTROL, 0x11),
 
-   DEFINE_KEY(PAUSE, 0x13),
+    DEFINE_KEY(PAUSE, 0x13),
     DEFINE_KEY(CAPITAL, 0x14),
 
     DEFINE_KEY(ESCAPE, 0x1B),
@@ -44,6 +44,17 @@ typedef enum keys{
     DEFINE_KEY(INSERT, 0x2D),
     DEFINE_KEY(DELETE, 0x2E),
     DEFINE_KEY(HELP, 0x2F),
+
+    DEFINE_KEY(0, 0x30),
+    DEFINE_KEY(1, 0x31),
+    DEFINE_KEY(2, 0x32),
+    DEFINE_KEY(3, 0x33),
+    DEFINE_KEY(4, 0x34),
+    DEFINE_KEY(5, 0x35),
+    DEFINE_KEY(6, 0x36),
+    DEFINE_KEY(7, 0x37),
+    DEFINE_KEY(8, 0x38),
+    DEFINE_KEY(9, 0x39),
 
     DEFINE_KEY(A, 0x41),
     DEFINE_KEY(B, 0x42),
