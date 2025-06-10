@@ -83,6 +83,8 @@
         "logger.h": "c",
         "application.h": "c",
         "defines.h": "c",
-        "game_types.h": "c"
+        "game_types.h": "c",
+        "vulkan_device.h": "c",
+        "vulkan_types.inl": "c"
     }
 }
