@@ -82,3 +82,30 @@ typedef struct vertex_2d {
     vec2 position;
     vec2 texcoord;
 } vertex_2d;
+
+
+
+
+/**
+ * @brief Represents the transform of an object in the world.
+ * Transforms can have a parent whose own transform is then
+ * taken into account. 
+ * 
+ * NOTE: The properties of this should not
+ * be edited directly, but done via the functions in transform.h
+ * to ensure proper matrix generation.Add commentMore actions
+ */
+typedef struct transform {
+
+    vec3 position;
+    quat rotation;
+    vec3 scale;
+
+
+    b8 is_dirty;
+
+    mat4 local;
+
+    /** @brief A pointer to a parent transform if one is assigned. Can also be null. */
+    struct transform* parent;
+} transform;
