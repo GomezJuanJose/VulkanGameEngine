@@ -140,7 +140,7 @@ typedef struct renderer_backend {
      * @param s A pointer to the shader to apply the instance data for.
      * @return True on success; otherwise false.
      */
-    b8 (*shader_apply_instance)(struct shader* s);
+    b8 (*shader_apply_instance)(struct shader* s, b8 needs_update);
 
     /**
      * @brief Acquires internal instance-level resources and provides an instace id.

@@ -290,7 +290,7 @@ TAPI b8 shader_system_apply_global();
  * 
  * @return True on success; otherwise false.
  */
-TAPI b8 shader_system_apply_instance();
+TAPI b8 shader_system_apply_instance(b8 needs_update);
 
 /**
  * @brief Binds the instance with the given id for use. Must be done before setting

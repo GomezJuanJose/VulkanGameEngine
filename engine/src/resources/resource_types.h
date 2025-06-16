@@ -8,7 +8,7 @@ typedef enum resource_type{
     RESOURCE_TYPE_BINARY,
     RESOURCE_TYPE_IMAGE,
     RESOURCE_TYPE_MATERIAL,
-    RESOURCE_TYPE_STATIC_MESH,
+    RESOURCE_TYPE_MESH,
     RESOURCE_TYPE_SHADER,
     RESOURCE_TYPE_CUSTOM
 } resource_type;
@@ -101,7 +101,7 @@ typedef struct geometry {
 typedef struct mesh {
     u16 geometry_count;
     geometry** geometries;
-    mat4 model;
+    transform transform;
 } mesh;
 
 /** @brief Shader stages available in the system. */

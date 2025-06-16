@@ -21,6 +21,7 @@
 
 // TODO: temp
 #include "math/tmath.h"
+#include "math/transform.h"
 #include "math/geometry_utils.h"
 #include "containers/darray.h"
 // TODO: end temp
@@ -66,7 +67,9 @@ typedef struct application_state {
     void* geometry_system_state;
 
     // TODO: temp
-    mesh* meshes;
+    mesh meshes[10];
+    u32 mesh_count;
+
     geometry* test_ui_geomtry;
     // TODO: end temp
 } application_state;
@@ -241,35 +244,81 @@ b8 application_create(game* game_inst){
     }
 
     // TODO: temp
-    app_state->meshes = darray_create(mesh);
+    app_state->mesh_count = 0;
     
     // Load up a plane configuration, and load geometry from it.
-    mesh cube_mesh;
-    cube_mesh.geometry_count = 1;
-    cube_mesh.geometries = tallocate(sizeof(mesh*) * cube_mesh.geometry_count, MEMORY_TAG_ARRAY);
+    mesh* cube_mesh = &app_state->meshes[app_state->mesh_count];
+    cube_mesh->geometry_count = 1;
+    cube_mesh->geometries = tallocate(sizeof(mesh*) * cube_mesh->geometry_count, MEMORY_TAG_ARRAY);
     geometry_config g_config = geometry_system_generate_cube_config(10.0f, 10.0f, 10.0f, 1.0f, 1.0f, "test_cube", "test_material");
     geometry_generate_tangents(g_config.vertex_count, g_config.vertices, g_config.index_count, g_config.indices);
-    cube_mesh.geometries[0] = geometry_system_acquire_from_config(g_config, TRUE);
-    cube_mesh.model = mat4_identity();
-    darray_push(app_state->meshes, cube_mesh);
+    cube_mesh->geometries[0] = geometry_system_acquire_from_config(g_config, TRUE);
+    cube_mesh->transform = transform_create();
+    app_state->mesh_count++;
     // Clean up the allocations for the geometry config.
-    tfree(g_config.vertices, sizeof(vertex_3d) * g_config.vertex_count, MEMORY_TAG_ARRAY);
-    tfree(g_config.indices, sizeof(u32) * g_config.index_count, MEMORY_TAG_ARRAY);
+    geometry_system_config_dispose(&g_config);
 
-    mesh cube_mesh_2;
-    cube_mesh_2.geometry_count = 1;
-    cube_mesh_2.geometries = tallocate(sizeof(mesh*) * cube_mesh_2.geometry_count, MEMORY_TAG_ARRAY);
+    mesh* cube_mesh_2 = &app_state->meshes[app_state->mesh_count];
+    cube_mesh_2->geometry_count = 1;
+    cube_mesh_2->geometries = tallocate(sizeof(mesh*) * cube_mesh_2->geometry_count, MEMORY_TAG_ARRAY);
     geometry_config g_config_2 = geometry_system_generate_cube_config(5.0f, 5.0f, 5.0f, 1.0f, 1.0f, "test_cube_2", "test_material");
     geometry_generate_tangents(g_config_2.vertex_count, g_config_2.vertices, g_config_2.index_count, g_config_2.indices);
-    cube_mesh_2.geometries[0] = geometry_system_acquire_from_config(g_config_2, TRUE);
-    cube_mesh_2.model = mat4_translation((vec3){10.0f, 0.0f, 1.0f});
-    darray_push(app_state->meshes, cube_mesh_2);
-
+    cube_mesh_2->geometries[0] = geometry_system_acquire_from_config(g_config_2, TRUE);
+    cube_mesh_2->transform = transform_from_position((vec3){10.0f, 0.0f, 1.0f});
+    transform_set_parent(&cube_mesh_2->transform, &cube_mesh->transform);
+    app_state->mesh_count++;
     // Clean up the allocations for the geometry config.
-    tfree(g_config_2.vertices, sizeof(vertex_3d) * g_config_2.vertex_count, MEMORY_TAG_ARRAY);
-    tfree(g_config_2.indices, sizeof(u32) * g_config_2.index_count, MEMORY_TAG_ARRAY);
+    geometry_system_config_dispose(&g_config_2);
     //Load up default geometry.
     //app_state->test_geometry = geometry_system_get_default();
+
+    mesh* cube_mesh_3 = &app_state->meshes[app_state->mesh_count];
+    cube_mesh_3->geometry_count = 1;
+    cube_mesh_3->geometries = tallocate(sizeof(mesh*) * cube_mesh_3->geometry_count, MEMORY_TAG_ARRAY);
+    geometry_config g_config_3 = geometry_system_generate_cube_config(2.0f, 2.0f, 2.0f, 1.0f, 1.0f, "test_cube_3", "test_material");
+    geometry_generate_tangents(g_config_3.vertex_count, g_config_3.vertices, g_config_3.index_count, g_config_3.indices);
+    cube_mesh_3->geometries[0] = geometry_system_acquire_from_config(g_config_3, TRUE);
+    cube_mesh_3->transform = transform_from_position((vec3){5.0f, 0.0f, 1.0f});
+    transform_set_parent(&cube_mesh_3->transform, &cube_mesh_2->transform);
+    app_state->mesh_count++;
+    // Clean up the allocations for the geometry config.
+    geometry_system_config_dispose(&g_config_3);
+
+    // External test meshes
+    mesh* car_mesh = &app_state->meshes[app_state->mesh_count];
+    resource car_mesh_resource = {};
+    if(!resource_system_load("falcon", RESOURCE_TYPE_MESH, &car_mesh_resource)){
+        TERROR("Failed to load car mesh test mesh!");
+    }
+    geometry_config* config_car = (geometry_config*)car_mesh_resource.data;
+    car_mesh->geometry_count = car_mesh_resource.data_size;
+    car_mesh->geometries = tallocate(sizeof(mesh*) * car_mesh->geometry_count, MEMORY_TAG_ARRAY);
+    for(u32 i = 0; i < car_mesh->geometry_count; ++i){
+        geometry_config* c = &config_car[i];
+        geometry_generate_tangents(c->vertex_count, c->vertices, c->index_count, c->indices);
+        car_mesh->geometries[i] = geometry_system_acquire_from_config(*c, TRUE);
+    }
+    car_mesh->transform = transform_from_position((vec3){15.0f, 0.0f, 1.0f});
+    resource_system_unload(&car_mesh_resource);
+    app_state->mesh_count++;
+
+    mesh* sponza_mesh = &app_state->meshes[app_state->mesh_count];
+    resource sopnza_mesh_resource = {};
+    if(!resource_system_load("sponza", RESOURCE_TYPE_MESH, &sopnza_mesh_resource)){
+        TERROR("Failed to load sponza mesh test mesh!");
+    }
+    geometry_config* config_sponza = (geometry_config*)sopnza_mesh_resource.data;
+    sponza_mesh->geometry_count = sopnza_mesh_resource.data_size;
+    sponza_mesh->geometries = tallocate(sizeof(mesh*) * sponza_mesh->geometry_count, MEMORY_TAG_ARRAY);
+    for(u32 i = 0; i < sponza_mesh->geometry_count; ++i){
+        geometry_config* c = &config_sponza[i];
+        geometry_generate_tangents(c->vertex_count, c->vertices, c->index_count, c->indices);
+        sponza_mesh->geometries[i] = geometry_system_acquire_from_config(*c, TRUE);
+    }
+    sponza_mesh->transform = transform_from_position_rotation_scale(vec3_zero(), quat_identity(), (vec3){0.05f, 0.05f, 0.05f});
+    resource_system_unload(&sopnza_mesh_resource);
+    app_state->mesh_count++;
+
 
 
     // Load up some test UI geometry.
@@ -371,40 +420,39 @@ b8 application_run(){
             }
 
             // TODO: refactor packet creation
-            render_packet packet;
+            render_packet packet = {};
             packet.delta_time = delta;
+            packet.geometry_count = 0;
 
             // TODO: temp
-            u32 mesh_count = darray_length(app_state->meshes);
-            if(mesh_count > 0){
+            packet.geometries = darray_create(geometry_render_data);
+            if(app_state->mesh_count > 0){
                 // NOTE: Yes, this allocates/frees every frame. No, it doesnt matter for now since it's temporary.
                 packet.geometries = darray_create(geometry_render_data);
 
                 // Perform a small rotation on the first mesh.
                 quat rotation = quat_from_axis_angle((vec3){0, 1, 0}, 0.5f * delta, FALSE);
-                mat4 rotation_matrix = quat_to_mat4(rotation);
-                app_state->meshes[0].model = mat4_mul(app_state->meshes[0].model, rotation_matrix);
+                transform_rotate(&app_state->meshes[0].transform, rotation);
 
-                if(mesh_count > 1){
-                    // "Parent" the second cube ro the first.
-                    app_state->meshes[1].model = mat4_mul(mat4_translation((vec3){10.0f, 0.0f, 1.0f}), app_state->meshes[0].model);
+                if(app_state->mesh_count > 1){
+                   transform_rotate(&app_state->meshes[1].transform, rotation);
+                }
+
+                if(app_state->mesh_count > 2){
+                   transform_rotate(&app_state->meshes[2].transform, rotation);
                 }
 
                 // Iterate all meshes and add the to the packet's geometries collection
-                for(u32 i = 0; i < mesh_count; ++i){
-                    for(u32 j = 0; j < app_state->meshes[i].geometry_count; ++j){
+                for(u32 i = 0; i < app_state->mesh_count; ++i){
+                    mesh* mesh = &app_state->meshes[i];
+                    for(u32 j = 0; j < mesh->geometry_count; ++j){
                         geometry_render_data data;
-                        data.geometry = app_state->meshes[i].geometries[j];
-                        data.model = app_state->meshes[i].model;
+                        data.geometry = mesh->geometries[j];
+                        data.model = transform_get_world(&mesh->transform);
                         darray_push(packet.geometries, data);
+                        packet.geometry_count++;
                     }
                 }
-
-                packet.geometry_count = darray_length(packet.geometries);
-            }
-            else{
-                packet.geometry_count = 0;
-                packet.geometries = 0;
             }
 
             geometry_render_data test_ui_render;
@@ -412,7 +460,7 @@ b8 application_run(){
             test_ui_render.model = mat4_translation((vec3){0, 0, 0});
             packet.ui_geometry_count = 1;
             packet.ui_geometries = &test_ui_render;
-            // TODO: end temp
+            
 
             renderer_draw_frame(&packet);
 
@@ -421,6 +469,8 @@ b8 application_run(){
                 darray_destroy(packet.geometries);
                 packet.geometries = 0;
             }
+
+            // TODO: end temp
 
             // Figure out how long the frame took and, if below
             f64 frame_end_time = platform_get_absolute_time();

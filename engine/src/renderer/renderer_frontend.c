@@ -188,17 +188,19 @@ b8 renderer_draw_frame(render_packet* packet){
                 m = material_system_get_default();
             }
 
-            // Apply the material if it hasn't already been this frame. This keeps the
-            // same material from being update multiple times.
-            if(m->render_frame_number != state_ptr->backend.frame_number){
-                if(!material_system_apply_instance(m)){
-                    TWARN("Failed to apply material '%s'. Skipping draw.", m->name);
-                    continue;
-                } else {
-                    // Sync the fframe number.
-                    m->render_frame_number = state_ptr->backend.frame_number;
-                }
+            // Update the material if it hasn't already been this frame. This keeps the
+            // same material from being updated multiple times. It still needs to be bound
+            // either way, so this check result gets passed to the backend which either
+            // updates the internal shader bindings and binds them, or only binds them.
+            b8 needs_update = m->render_frame_number != state_ptr->backend.frame_number;
+            if(!material_system_apply_instance(m, needs_update)){
+                TWARN("Failed to apply material '%s'. Skipping draw.", m->name);
+                continue;
+            } else {
+                // Sync the fframe number.
+                m->render_frame_number = state_ptr->backend.frame_number;
             }
+            
 
             // Apply the locals
             material_system_apply_local(m, &packet->geometries[i].model);
@@ -242,10 +244,17 @@ b8 renderer_draw_frame(render_packet* packet){
                 m = material_system_get_default();
             }
 
-            // Apply the material
-            if(!material_system_apply_instance(m)){
+            // Update the material if it hasn't already been this frame. This keeps the
+            // same material from being updated multiple times. It still needs to be bound
+            // either way, so this check result gets passed to the backend which either
+            // updates the internal shader bindings and binds them, or only binds them.
+            b8 needs_update = m->render_frame_number != state_ptr->backend.frame_number;
+            if(!material_system_apply_instance(m, needs_update)){
                 TWARN("Failed to apply UI material '%s'. Skipping draw.", m->name);
                 continue;
+            } else {
+                // Sync the frame buffer.
+                m->render_frame_number = state_ptr->backend.frame_number;
             }
 
             // Apply the locals
@@ -351,8 +360,8 @@ b8 renderer_shader_apply_globals(shader* s) {
 
 
 
-b8 renderer_shader_apply_instance(shader* s) {
-    return state_ptr->backend.shader_apply_instance(s);
+b8 renderer_shader_apply_instance(shader* s, b8 needs_update) {
+    return state_ptr->backend.shader_apply_instance(s, needs_update);
 }
 
 

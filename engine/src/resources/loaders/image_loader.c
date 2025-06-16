@@ -3,9 +3,10 @@
 #include "core/logger.h"
 #include "core/tmemory.h"
 #include "core/tstring.h"
+
 #include "resources/resource_types.h"
 #include "systems/resource_system.h"
-
+#include "platform/filesystem.h"
 #include "loader_utils.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -22,8 +23,22 @@ b8 image_loader_load(struct resource_loader* self, const char* name, resource* o
     stbi_set_flip_vertically_on_load(TRUE);
     char full_file_path[512];
 
-    // TODO: try different extensions
-    string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, ".png");
+    // Try different extensions
+    #define IMAGE_EXTENSION_COUNT 4
+    b8 found = FALSE;
+    char* extensions[IMAGE_EXTENSION_COUNT] = {".tga", ".png", ".jpg", ".bmp"};
+    for(u32 i = 0; i < IMAGE_EXTENSION_COUNT; ++i){
+        string_format(full_file_path, format_str, resource_system_base_path(), self->type_path, name, extensions[i]);
+        if(filesystem_exists(full_file_path)){
+            found = TRUE;
+            break;
+        }
+    }
+
+    if(!found){
+        TERROR("Image resource loader failed find file '%s'.", full_file_path);
+        return FALSE;
+    }
 
     i32 width;
     i32 height;
@@ -34,6 +49,8 @@ b8 image_loader_load(struct resource_loader* self, const char* name, resource* o
     u8* data = stbi_load(full_file_path, &width, &height, &channel_count, required_channel_count);
 
     // Check for failure reason. If there is one, abort, clear memory if allocated, return FALSE.
+    // NOTE: Commeted because it can lead to a false positive, even it loads the image.
+    /*
     const char* fail_reason = stbi_failure_reason();
     if(fail_reason){
         TERROR("Image resource loader failed to load file '%s' : %s", full_file_path, fail_reason);
@@ -45,6 +62,7 @@ b8 image_loader_load(struct resource_loader* self, const char* name, resource* o
             return FALSE;
         }
     }
+    */
         
     // TODO: Should be using an allocator here.
     out_resource->full_path = string_duplicate(full_file_path);

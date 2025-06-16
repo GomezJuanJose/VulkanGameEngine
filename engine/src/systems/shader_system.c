@@ -326,8 +326,8 @@ b8 shader_system_apply_global(){
     return renderer_shader_apply_globals(&state_ptr->shaders[state_ptr->current_shader_id]);
 }
 
-b8 shader_system_apply_instance(){
-    return renderer_shader_apply_instance(&state_ptr->shaders[state_ptr->current_shader_id]);
+b8 shader_system_apply_instance(b8 needs_update){
+    return renderer_shader_apply_instance(&state_ptr->shaders[state_ptr->current_shader_id], needs_update);
 }
 
 b8 shader_system_bind_instance(u32 instance_id){

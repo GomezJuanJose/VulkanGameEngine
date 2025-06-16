@@ -497,7 +497,7 @@ TINLINE vec3 vec3_cross(vec3 vector_0, vec3 vector_1){
  * @param vector_0 The first vector.
  * @param vector_1 The second vector.
  * @param tolerance The difference tolerance. Typically T_FLOAT_EPSILON or similar.
- * @return True if with tolerance; otherwise false.
+ * @return True if within tolerance; otherwise false.
  */
 TINLINE const b8 vec3_compare(vec3 vector_0, vec3 vector_1, f32 tolerance){
     if(tabs(vector_0.x - vector_1.x) > tolerance){
@@ -723,6 +723,36 @@ TINLINE f32 vec4_dot_f32(
     
     return p;
 }
+
+/**
+ * @brief Compares all elements of vector_0 and vector_1 and ensures the difference is less than tolerance.
+ * 
+ * @param vector_0 The first vector.
+ * @param vector_1 The second vector.
+ * @param tolerance The difference tolerance. Typically T_FLOAT_EPSILON or similar.
+ * @return True if within tolerance; otherwise false.
+ */
+TINLINE const b8 vec4_compare(vec4 vector_0, vec4 vector_1, f32 tolerance){
+    if(tabs(vector_0.x - vector_1.x) > tolerance){
+        return FALSE;
+    }
+
+    if(tabs(vector_0.y - vector_1.y) > tolerance){
+        return FALSE;
+    }
+
+    if(tabs(vector_0.z - vector_1.z) > tolerance){
+        return FALSE;
+    }
+
+    if(tabs(vector_0.w - vector_1.w) > tolerance){
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
 
 //--------------------------------------------------
 // Matrix
