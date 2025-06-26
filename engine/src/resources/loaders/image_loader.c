@@ -4,6 +4,8 @@
 #include "core/tmemory.h"
 #include "core/tstring.h"
 
+#include "platform/filesystem.h"
+
 #include "resources/resource_types.h"
 #include "systems/resource_system.h"
 #include "platform/filesystem.h"
@@ -24,7 +26,7 @@ b8 image_loader_load(struct resource_loader* self, const char* name, resource* o
     char full_file_path[512];
 
     // Try different extensions
-    #define IMAGE_EXTENSION_COUNT 4
+    #define IMAGE_EXTENSION_COUNT 5
     b8 found = FALSE;
     char* extensions[IMAGE_EXTENSION_COUNT] = {".tga", ".png", ".jpg", ".bmp"};
     for(u32 i = 0; i < IMAGE_EXTENSION_COUNT; ++i){
@@ -36,7 +38,7 @@ b8 image_loader_load(struct resource_loader* self, const char* name, resource* o
     }
 
     if(!found){
-        TERROR("Image resource loader failed find file '%s'.", full_file_path);
+        TERROR("Image resource loader failed find file '%s/%s/%s'.", resource_system_base_path(), self->type_path, name);
         return FALSE;
     }
 

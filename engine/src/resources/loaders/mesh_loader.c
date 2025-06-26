@@ -47,7 +47,7 @@ void process_subobjects(vec3* positions, vec3* normals, vec2* tex_coords, mesh_f
 b8 import_obj_material_library_file(const char* mtl_file_path);
 
 b8 load_tsm_file(file_handle* tsm_file, geometry_config** out_geometries_darray);
-b8 write_tsm_file(const char* path, const char* name, u32 geometry_count, geometry_config** geometries);
+b8 write_tsm_file(const char* path, const char* name, u32 geometry_count, geometry_config* geometries);
 b8 write_tmt_file(const char* directory, material_config* config);
 
 b8 mesh_loader_load(struct resource_loader* self, const char* name, resource* out_resource){
@@ -106,6 +106,7 @@ b8 mesh_loader_load(struct resource_loader* self, const char* name, resource* ou
             result = load_tsm_file(&f, &resource_data);
             break;
         
+        default:
         case MESH_FILE_TYPE_NOT_FOUND:
             TERROR("Unable to find mesh of supported type called '%s'.", name);
             result = FALSE;
@@ -141,12 +142,122 @@ void mesh_loader_unload(struct resource_loader* self, resource* resource){
 }
 
 b8 load_tsm_file(file_handle* tsm_file, geometry_config** out_geometries_darray){
-    // TODO: Read tsm file...
+    // Version
+    u64 bytes_read = 0;
+    u16 version = 0;
+    filesystem_read(tsm_file, sizeof(u16), &version, &bytes_read);
+
+    // Name length
+    u32 name_length = 0;
+    filesystem_read(tsm_file, sizeof(u32), &name_length, &bytes_read);
+    // Name + terminator
+    char name[256];
+    filesystem_read(tsm_file, sizeof(char) * name_length, name, &bytes_read);
+
+    // Geometry count
+    u32 geometry_count = 0;
+    filesystem_read(tsm_file, sizeof(u32), &geometry_count, &bytes_read);
+
+    // Each geometry
+    for (u32 i = 0; i < geometry_count; ++i){
+        geometry_config g = {};
+
+        // Vertices (size/count/array)
+        filesystem_read(tsm_file, sizeof(u32), &g.vertex_size, &bytes_read);
+        filesystem_read(tsm_file, sizeof(u32), &g.vertex_count, &bytes_read);
+        g.vertices = tallocate(g.vertex_size * g.vertex_count, MEMORY_TAG_ARRAY);
+        filesystem_read(tsm_file, g.vertex_size * g.vertex_count, g.vertices, &bytes_read);
+
+        // Indices (size/count/array)
+        filesystem_read(tsm_file, sizeof(u32), &g.index_size, &bytes_read);
+        filesystem_read(tsm_file, sizeof(u32), &g.index_count, &bytes_read);
+        g.indices = tallocate(g.index_size * g.index_count, MEMORY_TAG_ARRAY);
+        filesystem_read(tsm_file, g.index_size * g.index_count, g.indices, &bytes_read);
+
+        // Name
+        u32 g_name_length = 0;
+        filesystem_read(tsm_file, sizeof(u32), &g_name_length, &bytes_read);
+        filesystem_read(tsm_file, sizeof(char) * g_name_length, g.name, &bytes_read);
+
+        // Material Name
+        u32 m_name_length = 0;
+        filesystem_read(tsm_file, sizeof(u32), &m_name_length, &bytes_read);
+        filesystem_read(tsm_file, sizeof(char) * m_name_length, g.material_name, &bytes_read);
+
+        // Center
+        filesystem_read(tsm_file, sizeof(vec3), &g.center, &bytes_read);
+
+        // Extents (min/max)
+        filesystem_read(tsm_file, sizeof(vec3), &g.min_extents, &bytes_read);
+        filesystem_read(tsm_file, sizeof(vec3), &g.max_extents, &bytes_read);
+
+        // Add to the output array.
+        darray_push(*out_geometries_darray, g);
+    }
+
+    filesystem_close(tsm_file);
+
     return TRUE;
 }
 
-b8 write_tsm_file(const char* path, const char* name, u32 geometry_count, geometry_config** geometries){
-    // TODO: Write ou tsm binary file...
+b8 write_tsm_file(const char* path, const char* name, u32 geometry_count, geometry_config* geometries){
+    if(filesystem_exists(path)){
+        TINFO("File '%s' already exists and will be overwritten.", path);
+    }
+
+    file_handle f;
+    if(!filesystem_open(path, FILE_MODE_WRITE, TRUE, &f)){
+        TERROR("Unable to open file '%s' for writing. TSM write failed.", path);
+    }
+
+    // Version
+    u64 written = 0;
+    u16 version = 0x0001U;
+    filesystem_write(&f, sizeof(u16), &version, &written);
+
+    // Name length
+    u32 name_length = string_length(name) + 1;
+    filesystem_write(&f, sizeof(u32), &name_length, &written);
+    // Name + terminator
+    filesystem_write(&f, sizeof(char) * name_length, name, &written);
+
+    // Geometry count
+    filesystem_write(&f, sizeof(u32), &geometry_count, &written);
+
+    // Each geometry
+    for(u32 i = 0; i < geometry_count; ++i){
+        geometry_config* g = &geometries[i];
+
+        // Vertices (size/count/array)
+        filesystem_write(&f, sizeof(u32), &g->vertex_size, &written);
+        filesystem_write(&f, sizeof(u32), &g->vertex_count, &written);
+        filesystem_write(&f, g->vertex_size * g->vertex_count, g->vertices, &written);
+
+        // Indices (size/count/array)
+        filesystem_write(&f, sizeof(u32), &g->index_size, &written);
+        filesystem_write(&f, sizeof(u32), &g->index_count, &written);
+        filesystem_write(&f, g->index_size * g->index_count, g->indices, &written);
+
+        // Name
+        u32 g_name_length = string_length(g->name) + 1;
+        filesystem_write(&f, sizeof(u32), &g_name_length, &written);
+        filesystem_write(&f, sizeof(char) * g_name_length, g->name, &written);
+
+        // Material Name
+        u32 m_name_length = string_length(g->material_name) + 1;
+        filesystem_write(&f, sizeof(u32), &m_name_length, &written);
+        filesystem_write(&f, sizeof(char) * m_name_length, g->material_name, &written);
+
+        // Center
+        filesystem_write(&f, sizeof(vec3), &g->center, &written);
+
+        // Extents (min/max)
+        filesystem_write(&f, sizeof(vec3), &g->min_extents, &written);
+        filesystem_write(&f, sizeof(vec3), &g->max_extents, &written);
+    }
+
+    filesystem_close(&f);
+    
     return TRUE;
 }
 
@@ -169,7 +280,7 @@ b8 import_obj_file(file_handle* obj_file, const char* out_tsm_filename, geometry
     // Texture coordinates
     vec2* tex_coords = darray_reserve(vec2, 16384);
 
-    // Faces
+    // Groups
     mesh_group_data* groups = darray_reserve(mesh_group_data, 4);
 
     char material_file_name[512] = "";
@@ -264,14 +375,29 @@ b8 import_obj_file(file_handle* obj_file, const char* out_tsm_filename, geometry
             case 'f':{
                 // Face
                 // f 1/1/1 2/2/2 3/3/3 = pos/tex/norm pos/tex/norm pos/tex/norm
-                // f 1 1 1 = pos pos pos
+                // f 1//1 2//2 3//3 = pos//norm pos//norm pos//norm
+                // f 1 2 3 = pos pos pos
                 mesh_face_data face;
                 char t[2];
                 
                 u64 normal_count = darray_length(normals);
                 u64 tex_coord_count = darray_length(tex_coords);
 
-                if(normal_count == 0 || tex_coord_count == 0){
+                if (normal_count >= 0 && tex_coord_count == 0){
+                    sscanf(
+                        line_buf,
+                        "%s %d//%d %d//%d %d//%d",
+                        t,
+                        &face.vertices[0].position_index,
+                        &face.vertices[0].normal_index,
+
+                        &face.vertices[1].position_index,
+                        &face.vertices[1].normal_index,
+
+                        &face.vertices[2].position_index,
+                        &face.vertices[2].normal_index
+                    );
+                }else if(normal_count == 0 || tex_coord_count == 0){
                     sscanf(
                         line_buf,
                         "%s %d %d %d",
@@ -441,10 +567,13 @@ b8 import_obj_file(file_handle* obj_file, const char* out_tsm_filename, geometry
         darray_destroy(g->indices);
         // Replace with the non-darray version.
         g->indices = indices;
+
+        // Also generate tangents here, this way tangents are also stored in the output file.
+        geometry_generate_tangents(g->vertex_count, g->vertices, g->index_count, g->indices);
     }
 
     // Output a tsm file, which will be loaded in the future.
-    return write_tsm_file(out_tsm_filename, name, count, out_geometries_darray);
+    return write_tsm_file(out_tsm_filename, name, count, *out_geometries_darray);
 }
 
 void process_subobjects(vec3* position, vec3* normals, vec2* tex_coords, mesh_face_data* faces, geometry_config* out_data){
@@ -506,7 +635,7 @@ void process_subobjects(vec3* position, vec3* normals, vec2* tex_coords, mesh_fa
             extent_set = TRUE;
 
             if(skip_normals){
-                vert.normal = vec3_zero();
+                vert.normal = vec3_create(0, 0, 1);
             }else{
                 vert.normal = normals[index_data.normal_index - 1];
             }
@@ -528,8 +657,6 @@ void process_subobjects(vec3* position, vec3* normals, vec2* tex_coords, mesh_fa
         out_data->center.elements[i] = (out_data->min_extents.elements[i] + out_data->max_extents.elements[i]) / 2.0f;
     }
 
-    // Calculate tangents.
-    geometry_generate_tangents(out_data->vertex_count, out_data->vertices, out_data->index_count, out_data->indices);
 }
 
 // TODO: Load the material library file, and create material definitions from it.
@@ -674,7 +801,7 @@ b8 import_obj_material_library_file(const char* mtl_file_path){
             }
 
             case 'n': {
-                // Some implementations use 'bump' instead of 'map_bump'.
+
                 char substr[10];
                 char material_name[512];
 
@@ -766,7 +893,7 @@ b8 write_tmt_file(const char* mtl_file_path, material_config* config){
     filesystem_write_line(&f, line_buffer);
     string_format(line_buffer, "diffuse_colour=%.6f %.6f %.6f %.6f", config->diffuse_colour.r, config->diffuse_colour.g, config->diffuse_colour.b, config->diffuse_colour.a);
     filesystem_write_line(&f, line_buffer);
-    string_format(line_buffer, "shininess=%f", config->shininess);
+    string_format(line_buffer, "shininess=%.6f", config->shininess);
     filesystem_write_line(&f, line_buffer);
 
     if(config->diffuse_map_name[0]){

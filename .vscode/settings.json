@@ -85,6 +85,9 @@
         "defines.h": "c",
         "game_types.h": "c",
         "vulkan_device.h": "c",
-        "vulkan_types.inl": "c"
+        "vulkan_types.inl": "c",
+        "texture_system.h": "c",
+        "freelist.h": "c",
+        "resource_types.h": "c"
     }
 }
