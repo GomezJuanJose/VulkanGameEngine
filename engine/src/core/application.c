@@ -300,7 +300,7 @@ b8 application_create(game* game_inst){
     mesh* sponza_mesh = &app_state->meshes[app_state->mesh_count];
     resource sopnza_mesh_resource = {};
     if(!resource_system_load("sponza", RESOURCE_TYPE_MESH, &sopnza_mesh_resource)){
-        TERROR("Failed to load sponza mesh test mesh!");
+        TERROR("Failed to load sponza mesh!");
     }else{
         geometry_config* config_sponza = (geometry_config*)sopnza_mesh_resource.data;
         sponza_mesh->geometry_count = sopnza_mesh_resource.data_size;

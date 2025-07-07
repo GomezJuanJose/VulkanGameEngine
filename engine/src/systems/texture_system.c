@@ -268,6 +268,7 @@ b8 create_default_textures(texture_system_state* state){
     state->default_texture.channel_count = 4;
     state->default_texture.generation = INVALID_ID;
     state->default_texture.has_transparency = FALSE;
+    state->default_texture.is_writeable = FALSE;
     renderer_create_texture(pixels, &state->default_texture);
     // Manually set the texture generation to invalid since this is a default texture.
     state->default_texture.generation = INVALID_ID;
@@ -283,6 +284,7 @@ b8 create_default_textures(texture_system_state* state){
     state->default_diffuse_texture.channel_count = 4;
     state->default_diffuse_texture.generation = INVALID_ID;
     state->default_diffuse_texture.has_transparency = FALSE;
+    state->default_diffuse_texture.is_writeable = FALSE;
     renderer_create_texture(diff_pixels, &state->default_diffuse_texture);
     // Manually set the texture generation to invalid since this is a default texture
     state->default_diffuse_texture.generation = INVALID_ID;
@@ -298,6 +300,7 @@ b8 create_default_textures(texture_system_state* state){
     state->default_specular_texture.channel_count = 4;
     state->default_specular_texture.generation = INVALID_ID;
     state->default_specular_texture.has_transparency = FALSE;
+    state->default_specular_texture.is_writeable = FALSE;
     renderer_create_texture(spec_pixels, &state->default_specular_texture);
     // Manually set the texture generation to invalid since this is a default texture
     state->default_specular_texture.generation = INVALID_ID;
@@ -327,6 +330,7 @@ b8 create_default_textures(texture_system_state* state){
     state->default_normal_texture.channel_count = 4;
     state->default_normal_texture.generation = INVALID_ID;
     state->default_normal_texture.has_transparency = FALSE;
+    state->default_normal_texture.is_writeable = FALSE;
     renderer_create_texture(normal_pixels, &state->default_normal_texture);
     // Manually set the texture generation to invalid since this is a default texture.
     state->default_normal_texture.generation = INVALID_ID;
@@ -378,6 +382,7 @@ b8 load_texture(const char* texture_name, texture* t){
     string_ncopy(temp_texture.name, texture_name, TEXTURE_NAME_MAX_LENGTH);
     temp_texture.generation = INVALID_ID;
     temp_texture.has_transparency = has_transparency;
+    temp_texture.is_writeable = FALSE;
 
     // Acquire internal texture resources and upload to GPU.
     renderer_create_texture(resource_data->pixel, &temp_texture);
