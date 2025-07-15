@@ -88,6 +88,8 @@
         "vulkan_types.inl": "c",
         "texture_system.h": "c",
         "freelist.h": "c",
-        "resource_types.h": "c"
+        "resource_types.h": "c",
+        "game.h": "c",
+        "math_types.h": "c"
     }
 }

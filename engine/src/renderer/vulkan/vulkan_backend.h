@@ -19,9 +19,39 @@ b8 vulkan_renderer_end_renderpass(struct renderer_backend* backend, u8 renderpas
 
 void vulkan_backend_draw_geometry(geometry_render_data data);
 
-void vulkan_backend_create_texture(const u8* pixels, texture* texture);
-void vulkan_backend_destroy_texture(struct texture* texture);
+void vulkan_backend_texture_create(const u8* pixels, texture* texture);
+void vulkan_backend_texture_destroy(struct texture* texture);
 
+/**
+ * @brief Creates a new writeable texture with no data written to it.
+ * 
+ * @param t A pointer to the texture to hold the resources.
+ */
+void vulkan_renderer_texture_create_writeable(texture* t);
+
+/**
+ * @brief Resizes a texture. There is no check at this level to see if the
+ * texture is writeable. Internal resources are destroyed and re-created at
+ * the new resolution. Data is lost and would need to be reloaded.
+ * 
+ * @param t A pointer to the texture to be resized.
+ * @param new_width The new width in pixels.
+ * @param new_height The new height in pixels.
+ */
+void vulkan_renderer_texture_resize(texture* t, u32 new_width, u32 new_height);
+
+/**
+ * @brief Writes the given data to the provided texture.
+ * NOTE: At this level, this can either be a writeable or non-writeable texture because
+ * this also handles the initial texture load. The texture system itself should be
+ * responsible for blocking write requests to non-writeable textures.
+ * 
+ * @param t A pointer to the texture to be written to. 
+ * @param offset The offset in bytes from the beginning of the data to be written.
+ * @param size The number of bytes to be written.
+ * @param pixels The raw image data to be written.
+ */
+void vulkan_renderer_texture_write_data(texture* t, u32 offset, u32 size, const u8* pixels);
 
 b8 vulkan_renderer_create_geometry(geometry* geometry, u32 vertex_size, u32 vertex_count, const void* vertices, u32 index_size, u32 index_count, const void* indices);
 void vulkan_renderer_destroy_geometry(geometry* geometry);

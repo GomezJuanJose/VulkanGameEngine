@@ -30,13 +30,25 @@ typedef struct image_resource_data {
 
 #define TEXTURE_NAME_MAX_LENGTH 512
 
+typedef enum texture_flag {
+    /** @brief Indicates if the texture has transparency. */
+    TEXTURE_FLAG_HAS_TRANSPARENCY = 0x1,
+    /** @brief Indicates if the texture can be written (rendered) to. */
+    TEXTURE_FLAG_IS_WRITEABLE = 0x2,
+    /** @brief Indicates if the texture was created via wrapping vs traditional creation. */
+    TEXTURE_FLAG_IS_WRAPPED = 0x4,
+} texture_flag;
+
+/** @brief Holds bit flags for textures.. */
+typedef u8 texture_flag_bits;
+
 typedef struct texture {
     u32 id;
     u32 width;
     u32 height;
     u8 channel_count;
-    b8 has_transparency;
-    b8 is_writeable;
+    /** @brief Holds various flags for this texture. */
+    texture_flag_bits flags;
     u32 generation;
     char name[TEXTURE_NAME_MAX_LENGTH];
     void* internal_data;
