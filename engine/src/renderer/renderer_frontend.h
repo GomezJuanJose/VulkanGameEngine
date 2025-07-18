@@ -14,9 +14,6 @@ void renderer_on_resized(u16 width, u16 height);
 
 b8 renderer_draw_frame(render_packet* packet);
 
-// HACK: this should not be expose outside the engine.
-TAPI void renderer_set_view(mat4 view, vec3 view_position);
-
 void renderer_texture_create(const u8* pixels, struct texture* texture);
 void renderer_texture_destroy(struct texture* texture);
 

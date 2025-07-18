@@ -91,6 +91,13 @@
         "resource_types.h": "c",
         "game.h": "c",
         "math_types.h": "c",
-        "resource_system.h": "c"
+        "resource_system.h": "c",
+        "iosfwd": "c",
+        "xlocbuf": "c",
+        "iterator": "c",
+        "map": "c",
+        "memory": "c",
+        "set": "c",
+        "xmemory": "c"
     }
 }
