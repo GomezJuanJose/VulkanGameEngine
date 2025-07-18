@@ -256,6 +256,7 @@ void create(vulkan_context* context, u32 width, u32 height, vulkan_swapchain* sw
     }
 
     // Create depth image and its view
+    vulkan_image* image = tallocate(sizeof(texture), MEMORY_TAG_TEXTURE);
     vulkan_image_create(
         context,
         VK_IMAGE_TYPE_2D,
@@ -267,7 +268,19 @@ void create(vulkan_context* context, u32 width, u32 height, vulkan_swapchain* sw
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
         TRUE,
         VK_IMAGE_ASPECT_DEPTH_BIT,
-        &swapchain->depth_attachment
+        image
+    );
+
+    // Wrap it in a texture.
+    context->swapchain.depth_texture = texture_system_wrap_internal(
+        "__taller_default_depth_texture__",
+        swapchain_extent.width,
+        swapchain_extent.height,
+        context->device.depth_channel_count,
+        FALSE,
+        TRUE,
+        FALSE,
+        image
     );
 
     TINFO("Swapchain created successfully.");
@@ -275,7 +288,9 @@ void create(vulkan_context* context, u32 width, u32 height, vulkan_swapchain* sw
 
 void destroy(vulkan_context* context, vulkan_swapchain* swapchain){
     vkDeviceWaitIdle(context->device.logical_device);
-    vulkan_image_destroy(context, &swapchain->depth_attachment);
+    vulkan_image_destroy(context, (vulkan_image*)swapchain->depth_texture->internal_data);
+    tfree(swapchain->depth_texture->internal_data, sizeof(vulkan_image), MEMORY_TAG_TEXTURE);
+    swapchain->depth_texture->internal_data = 0;
 
     // Only destroy the views, not the images, since those are owned by the swapchain and are thus
     // destroyed when it is.

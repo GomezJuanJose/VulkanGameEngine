@@ -90,6 +90,7 @@
         "freelist.h": "c",
         "resource_types.h": "c",
         "game.h": "c",
-        "math_types.h": "c"
+        "math_types.h": "c",
+        "resource_system.h": "c"
     }
 }
