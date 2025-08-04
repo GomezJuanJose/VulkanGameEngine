@@ -120,11 +120,11 @@ typedef struct renderer_backend {
     void (*update_global_ui_state)(mat4 projection, mat4 view, i32 mode);
     b8 (*end_frame)(struct renderer_backend* backend, f32 delta_time);
 
-    b8 (*begin_renderpass)(struct renderer_backend* backend, renderpass* pass, render_target* target);
-    b8 (*end_renderpass)(struct renderer_backend* backend, renderpass* pass);
+    b8 (*renderpass_begin)(renderpass* pass, render_target* target);
+    b8 (*renderpass_end)(renderpass* pass);
     renderpass* (*renderpass_get)(const char* name);
 
-    void (*draw_geometry)(geometry_render_data data);
+    void (*draw_geometry)(geometry_render_data* data);
 
     void (*texture_create)(const u8* pixels, struct texture* texture);
     void (*texture_destroy)(struct texture* texture);
@@ -349,12 +349,171 @@ typedef struct renderer_backend {
     u8 (*window_attachment_index_get)();
 } renderer_backend;
 
+/** @brief Known render view types, which have logic associated with them. */
+typedef enum render_view_known_type {
+    /** @brief A view which only renders objects with *no* transparency. */
+    RENDERER_VIEW_KNOWN_TYPE_WORLD = 0x01,
+    /** @brief A view which only renders ui objects. */
+    RENDERER_VIEW_KNOWN_TYPE_UI = 0x02
+} render_view_known_type;
+
+/** @brief Known view matrix sources. */
+typedef enum render_view_view_matrix_source {
+    RENDER_VIEW_VIEW_MATRIX_SOURCE_SCENE_CAMERA = 0x01,
+    RENDER_VIEW_VIEW_MATRIX_SOURCE_UI_CAMERA = 0x02,
+    RENDER_VIEW_VIEW_MATRIX_SOURCE_LIGHT_CAMERA = 0x03,
+} render_view_view_matrix_source;
+
+/** @brief Known projection matrix sources. */
+typedef enum render_view_projection_matrix_source {
+    RENDER_VIEW_PROJECTION_MATRIX_SOURCE_DEFAULT_PERSPECTIVE = 0x01,
+    RENDER_VIEW_PROJECTION_MATRIX_SOURCE_DEFAULT_ORTHOGRAPHIC = 0x02,
+} render_view_projection_matrix_source;
+
+/** @brief configuration for a renderpass to be associated with a view */
+typedef struct render_view_pass_config {
+    const char* name;
+} render_view_pass_config;
+
+/**
+ * @brief The configuration of a render view.
+ * Used as a serialization target.
+ */
+typedef struct render_view_config {
+    /** @brief The name of the view. */
+    const char* name;
+
+    /**
+     * @brief The name of a custom shader to be used
+     * instead of the view's default. Must be 0 if
+     * not used.
+     */
+    const char* custom_shader_name;
+    /** @brief The width of the view. Set to 0 for 100% width. */
+    u16 width;
+    /** @brief The height of the view. Set to 0 for 100% height. */
+    u16 height;
+    /** @brief The known type of the view. Used to associate with view logic. */
+    render_view_known_type type;
+    /** @brief The source of the view matrix. */
+    render_view_view_matrix_source view_matrix_source;
+    /** @brief The source of the projection matrix. */
+    render_view_projection_matrix_source projection_matrix_source;
+    /** @brief The number of renderpasses used in this view. */
+    u8 pass_count;
+    /** @brief The configuration of renderpasses used in this view. */
+    render_view_pass_config* passes;
+} render_view_config;
+
+struct render_view_packet;
+
+/**
+ * @brief A render view instance, responsible for the generation
+ * of view packets based on internal logic and given config.
+ */
+typedef struct render_view {
+    /** @brief The unique identifier of this view. */
+    u16 id;
+    /** @brief The name of the view. */
+    const char* name;
+    /** @brief The current width of this view. */
+    u16 width;
+    /** @brief The current height of this view. */
+    u16 height;
+    /** @brief The known type of this view. */
+    render_view_known_type type;
+
+    /** @brief The number of renderpasses used by this view. */
+    u8 renderpass_count;
+    /** @brief An array of pointers to renderpasses used by this view. */
+    renderpass** passes;
+
+    /** @brief The name of the custom shader used by this view, if there is one. */
+    const char* custom_shader_name;
+    /** @brief The internal, view-specific data for this view. */
+    void* internal_data;
+
+    /**
+     * @brief A pointer to a function to be called when this view is created.
+     *
+     * @param self A pointer to the view being created.
+     * @return True on success; otherwise false.
+     */
+    b8 (*on_create)(struct render_view* self);
+    /**
+     * @brief A pointer to a function to be called when this view is destroyed.
+     *
+     * @param self A pointer to the view being destroyed.
+     */
+    void (*on_destroy)(struct render_view* self);
+
+    /**
+     * @brief A pointer to a function to be called when the owner of this view (such
+     * as the window) is resized.
+     *
+     * @param self A pointer to the view being resized.
+     * @param width The new width in pixels.
+     * @param width The new height in pixels.
+     */
+    void (*on_resize)(struct render_view* self, u32 width, u32 height);
+
+    /**
+     * @brief Builds a render view packet using the provided view and meshes.
+     *
+     * @param self A pointer to the view to use.
+     * @param data Freeform data used to build the packet.
+     * @param out_packet A pointer to hold the generated packet.
+     * @return True on success; otherwise false.
+     */
+    b8 (*on_build_packet)(const struct render_view* self, void* data, struct render_view_packet* out_packet);
+
+    /**
+     * @brief Uses the given view and packet to render the contents therein.
+     *
+     * @param self A pointer to the view to use.
+     * @param packet A pointer to the packet whose data is to be rendered.
+     * @param frame_number The current renderer frame number, typically used for data synchronization.
+     * @param render_target_index The current render target index for renderers that use multiple render targets at once (i.e. Vulkan).
+     * @return True on success; otherwise false.
+     */
+    b8 (*on_render)(const struct render_view* self, const struct render_view_packet* packet, u64 frame_number, u64 render_target_index);
+} render_view;
+
+/**
+ * @brief A packet for and generated by a render view, which contains
+ * data about what is to be rendered.
+ */
+typedef struct render_view_packet {
+    /** @brief A constant pointer to the view this packet is associated with. */
+    const render_view* view;
+    /** @brief The current view matrix. */
+    mat4 view_matrix;
+    /** @brief The current projection matrix. */
+    mat4 projection_matrix;
+    /** @brief The current view position, if applicable. */
+    vec3 view_position;
+    /** @brief The current scene ambient colour, if applicable. */
+    vec4 ambient_colour;
+    /** @brief The number of geometries to be drawn. */
+    u32 geometry_count;
+    /** @brief The geometries to be drawn. */
+    geometry_render_data* geometries;
+    /** @brief The name of the custom shader to use, if applicable. Otherwise 0. */
+    const char* custom_shader_name;
+    /** @brief Holds a pointer to freeform data, typically understood both by the object and consuming view. */
+    void* extended_data;
+} render_view_packet;
+
+typedef struct mesh_packet_data {
+    u32 mesh_count;
+    mesh* meshes;
+} mesh_packet_data;
+
 typedef struct render_packet{
     f32 delta_time;
 
-    u32 geometry_count;
-    geometry_render_data* geometries;
-
-    u32 ui_geometry_count;
-    geometry_render_data* ui_geometries;
+    /** The number of views to be rendered. */
+    u16 view_count;
+    /** An array of views to be rendered. */
+    render_view_packet* views;
 } render_packet;
