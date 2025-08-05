@@ -70,6 +70,28 @@ typedef union mat4_u {
     f32 data[16];
 } mat4;
 
+/**
+ * @brief Represents the extents of a 2d object.
+ */
+typedef struct extents_2d {
+    /** @brief The minimum extents of the objects. */
+    vec2 min;
+    /** @brief The maximum extents of the objects. */
+    vec2 max;
+} extents_2d;
+
+/**
+ * @brief Represents the extents of a 3d object.
+ */
+typedef struct extents_3d
+{
+    /** @brief The minimum extents of the object */
+    vec3 min;
+    /** @brief The maximum extents of the object */
+    vec3 max;
+} extents_3d;
+
+
 typedef struct vertex_3d {
     vec3 position;
     vec3 normal;

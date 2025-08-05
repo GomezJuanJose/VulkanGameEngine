@@ -127,7 +127,11 @@ typedef struct material{
 typedef struct geometry {
     u32 id;
     u32 internal_id;
-    u32 generation;
+    u16 generation;
+    /** @brief The center of the geometry in local coordinates. */
+    vec3 center;
+    /** @brief The extents of the geometry in local coordinates. */
+    extents_3d extents;
     char name[GEOMETRY_NAME_MAX_LENGTH];
     material* material;
 } geometry;
