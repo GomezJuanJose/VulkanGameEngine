@@ -50,7 +50,7 @@ b8 load_tsm_file(file_handle* tsm_file, geometry_config** out_geometries_darray)
 b8 write_tsm_file(const char* path, const char* name, u32 geometry_count, geometry_config* geometries);
 b8 write_tmt_file(const char* directory, material_config* config);
 
-b8 mesh_loader_load(struct resource_loader* self, const char* name, resource* out_resource){
+b8 mesh_loader_load(struct resource_loader* self, const char* name, void* params, resource* out_resource){
     if(!self || !name || !out_resource){
         return FALSE;
     }

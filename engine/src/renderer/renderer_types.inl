@@ -4,6 +4,7 @@
 #include "math/math_types.h"
 #include "resources/resource_types.h"
 
+#define BUILTIN_SHADER_NAME_SKYBOX "Shader.Builtin.Skybox"
 #define BUILTIN_SHADER_NAME_MATERIAL "Shader.Builtin.Material"
 #define BUILTIN_SHADER_NAME_UI "Shader.Builtin.UI"
 
@@ -175,7 +176,7 @@ typedef struct renderer_backend {
      * @param stages A array of shader_stages indicating what render stages (vertex, fragment, etc.) used in this shader.
      * @return b8 True on success; otherwise false.
      */
-    b8 (*shader_create)(struct shader* shader, renderpass* pass, u8 stage_count, const char** stage_filenames, shader_stage* stages);
+    b8 (*shader_create)(struct shader* shader, const shader_config* config, renderpass* pass, u8 stage_count, const char** stage_filenames, shader_stage* stages);
 
 
 
@@ -354,7 +355,9 @@ typedef enum render_view_known_type {
     /** @brief A view which only renders objects with *no* transparency. */
     RENDERER_VIEW_KNOWN_TYPE_WORLD = 0x01,
     /** @brief A view which only renders ui objects. */
-    RENDERER_VIEW_KNOWN_TYPE_UI = 0x02
+    RENDERER_VIEW_KNOWN_TYPE_UI = 0x02,
+    /** @brief A view which only renders skybox objects. */
+    RENDERER_VIEW_KNOWN_TYPE_SKYBOX = 0x03
 } render_view_known_type;
 
 /** @brief Known view matrix sources. */
@@ -508,6 +511,10 @@ typedef struct mesh_packet_data {
     u32 mesh_count;
     mesh* meshes;
 } mesh_packet_data;
+
+typedef struct skybox_packet_data{
+    skybox* sb;
+} skybox_packet_data;
 
 typedef struct render_packet{
     f32 delta_time;
