@@ -24,3 +24,10 @@ f64 platform_get_absolute_time();
 // Should only be used for giving time back to the OS for unused update power.
 // Therefore it is not exported.
 void platform_sleep(u64 ms);
+
+/**
+ * @brief Obtains the number of logical processor cores.
+ *
+ * @return The number of logical processor cores.
+ */
+i32 platform_get_processor_count();

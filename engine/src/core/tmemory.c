@@ -2,6 +2,7 @@
 
 #include "core/logger.h"
 #include "core/tstring.h"
+#include "core/tmutex.h"
 #include "platform/platform.h"
 
 #include "memory/dynamic_allocator.h"
@@ -45,6 +46,8 @@ typedef struct memory_system_state {
     u64 allocator_memory_requirement;
     dynamic_allocator allocator;
     void* allocator_block;
+    // A mutex for allocations/frees
+    tmutex allocation_mutex;
 } memory_system_state;
 
 static memory_system_state* state_ptr;
@@ -84,12 +87,21 @@ b8 memory_system_initialize(memory_system_configuration config){
         return FALSE;
     }
 
+    // Create allocation mutex
+    if(!tmutex_create(&state_ptr->allocation_mutex)){
+        TFATAL("Unable to create allocation mutex!");
+        return FALSE;
+    }
+
     TDEBUG("Memory system successfully allocated %llu bytes.", config.total_alloc_size);
     return TRUE;
 }
 
 void memory_system_shutdown(){
     if(state_ptr){
+        // Destroy allocation mutex
+        tmutex_destroy(&state_ptr->allocation_mutex);
+
         dynamic_allocator_destroy(&state_ptr->allocator);
         // Free the entire block
         platform_free(state_ptr, state_ptr->allocator_memory_requirement + sizeof(memory_system_state));
@@ -106,11 +118,18 @@ void* tallocate(u64 size, memory_tag tag){
     // really happen.
     void* block = 0;
     if(state_ptr){
+        // Make sure multithreaded requests don't trample each other.
+        if(!tmutex_lock(&state_ptr->allocation_mutex)){
+            TFATAL("Error obtaining mutex lock during allocation.");
+            return 0;
+        }
+
         state_ptr->stats.total_allocated += size;
         state_ptr->stats.tagged_allocations[tag] += size;
         state_ptr->alloc_count++;
 
         block = dynamic_allocator_allocate(&state_ptr->allocator, size);
+        tmutex_unlock(&state_ptr->allocation_mutex);
     } else {
         // If the system is not up yet, warn about it but give memory form now.
         TWARN("tallocate called before the memory system is initialized.");
@@ -133,9 +152,17 @@ void tfree(void* block, u64 size, memory_tag tag){
     }
 
     if(state_ptr){
+        // Make sure multithreaded requests don't trample each other.
+        if(!tmutex_lock(&state_ptr->allocation_mutex)){
+            TFATAL("Unable to obtain mutex lock for free operation. Heap corruption is likely.");
+            return;
+        }
+
         state_ptr->stats.total_allocated -= size;
         state_ptr->stats.tagged_allocations[tag] -= size;
         b8 result = dynamic_allocator_free(&state_ptr->allocator, block, size);
+
+        tmutex_unlock(&state_ptr->allocation_mutex);
 
         // If the free failed, it's possible this is because the allocation was made
         // before this system was started up. Since this absolutely should be an exception
