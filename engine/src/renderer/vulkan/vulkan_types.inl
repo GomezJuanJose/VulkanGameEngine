@@ -385,6 +385,9 @@ typedef struct vulkan_context{
     /** @brief Render targets used for world rendering. @note One per frame. */
     render_target world_render_targets[3];
 
+    /** @brief Indicates if multi-threading is supported by this device. */
+    b8 multithreading_enabled;
+
     i32 (*find_memory_index)(u32 type_filter, u32 property_flags);
 
     

@@ -348,6 +348,12 @@ typedef struct renderer_backend {
      * @brief Returns the current window attachment index.
      */
     u8 (*window_attachment_index_get)();
+
+    /**
+     * @brief Indicates if the renderer is capable of multi-threading.
+     */
+    b8 (*is_multithreaded)();
+
 } renderer_backend;
 
 /** @brief Known render view types, which have logic associated with them. */
