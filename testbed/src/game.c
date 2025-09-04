@@ -110,6 +110,12 @@ b8 game_update(game* game_inst, f32 delta_time){
         event_fire(EVENT_CODE_SET_RENDER_MODE, game_inst, data);
     }
 
+    // Bind a key to lead up some data.
+    if(input_is_key_up('L') && input_was_key_down('L')){
+        event_context context = {};
+        event_fire(EVENT_CODE_DEBUG1, game_inst, context);
+    }
+
     // TODO: end temporary 
 
     return TRUE;

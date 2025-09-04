@@ -246,7 +246,7 @@ void process_queue(ring_queue* queue, tmutex* queue_mutex){
             }
 
             // Check that the job thread can handle the job type.
-            if(tmutex_lock(&thread->info_mutex)){
+            if(!tmutex_lock(&thread->info_mutex)){
                 TERROR("Failed to obtain lock on job thread mutex!");
             }
 

@@ -6,6 +6,7 @@
 #include "core/tmemory.h"
 
 #include "math/tmath.h"
+#include "platform/platform.h"
 
 #include "resources/resource_types.h"
 #include "systems/resource_system.h"
@@ -234,6 +235,8 @@ b8 renderer_draw_frame(render_packet* packet){
             state_ptr->resizing = FALSE;
         } else {
             // Skip rendering the frame and try again next time.
+            // NOTE: Simulate a frame being "drawn at 60 FPS"
+            platform_sleep(16);
             return TRUE;
         }
     }
