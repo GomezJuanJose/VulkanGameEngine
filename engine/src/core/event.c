@@ -1,5 +1,6 @@
 #include "core/event.h"
 #include "core/tmemory.h"
+#include "core/logger.h"
 
 #include "containers/darray.h"
 
@@ -59,8 +60,8 @@ b8 event_register(u16 code, void* listener, PFN_on_event on_event){
 
     u64 registered_count = darray_length(state_ptr->registered[code].events);
     for(u64 i = 0; i < registered_count; ++i){
-        if(state_ptr->registered[code].events[i].listener == listener){
-            // TODO: warn
+        if(state_ptr->registered[code].events[i].listener == listener && state_ptr->registered[code].events[i].callback == on_event){
+            TWARN("Event has already been registered with the code %hu and the callback of %p", code, on_event);
             return FALSE;
         }
     }

@@ -299,6 +299,19 @@ b8 select_physical_device(vulkan_context* context){
         return FALSE;
     }
 
+     // TODO: These requirements should probably be driven by engine configuration.
+    vulkan_physical_device_requirements requirements = {};
+    requirements.graphics = TRUE;
+    requirements.present = TRUE;
+    requirements.transfer = TRUE;
+    // NOTE: Enable this if compute will be required.
+    // requirements.compute = TRUE;
+    requirements.sampler_anisotropy = TRUE;
+    requirements.discrete_gpu = TRUE;
+    requirements.device_extension_names = darray_create(const char*);
+    darray_push(requirements.device_extension_names, &VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+    // Iterate physical devices to find one that fits the bill
     VkPhysicalDevice physical_devices[32];
     VK_CHECK(vkEnumeratePhysicalDevices(context->instance, &physical_device_count, physical_devices));
     for(u32 i = 0; i < physical_device_count; ++i){
@@ -323,17 +336,7 @@ b8 select_physical_device(vulkan_context* context){
             }
         }
 
-        // TODO: These requirements should probably be driven by engine configuration.
-        vulkan_physical_device_requirements requirements = {};
-        requirements.graphics = TRUE;
-        requirements.present = TRUE;
-        requirements.transfer = TRUE;
-        // NOTE: Enable this if compute will be required.
-        // requirements.compute = TRUE;
-        requirements.sampler_anisotropy = TRUE;
-        requirements.discrete_gpu = TRUE;
-        requirements.device_extension_names = darray_create(const char*);
-        darray_push(requirements.device_extension_names, &VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
 
         vulkan_physical_device_queue_family_info queue_info = {};
         b8 result = physical_device_meets_requirements(
@@ -406,6 +409,9 @@ b8 select_physical_device(vulkan_context* context){
             break;
         }
     }
+
+    // Clean up requirements.
+    darray_destroy(requirements.device_extension_names);
 
     // Ensure a device was selected.
     if(!context->device.physical_device){
